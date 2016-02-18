@@ -1,0 +1,121 @@
+= Introduzione a JPA
+:author: Marco Andreini
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+
+== Oggetti -> tabelle
+
+Serializzare e deserializzare gli oggetti sul database può
+risultare particolarmente lungo da implementare:
+
+* occorre generare una *INSERT* per ogni nuovo oggetto salvato
+* occorre generare una *UPDATE* per ogni oggetto da risalvare
+* occorre generare una *DELETE* per ogni oggetto da cancellare.
+
+== Object Relational Mapping
+L'ORM è il processo di trasformazione dei dati tra gli oggetti (istanze di
+classi) e i database.
+
+.È utile perché?
+- semplifica enormemente il lavoro di interfacciamento al database;
+- evita di dover scrivere le procedure di trasformazione a mano.
+
+== ORM per il web
+Le applicazioni _Web_ in modo particolare possono dipendere da un particolare
+ORM
+
+- Ogni interazione su Web è separata (richieste separate)
+- La persistenza dello stato deve essere demandata all'ORM.
+
+== Una entity
+[source,java]
+----
+@Entity
+public class BlogEntry {
+
+  @Id @GeneratedValue
+  private Integer id;
+  
+  @Column(nullable=false)
+  private String title;
+  
+  private String summary;
+  
+  private String body;
+  
+  private Date date;
+}
+----
+
+== Java Persistence API
+
+JPA è una specifica java (JSR) per accedere, persistere e gestire dati tra
+oggetti Java specifici e database relazionali.
+
+È considerato come l'ORM standard per rendere i dati persistenti in ambiente Java.
+
+È stato inizialmente definito nella specifica EJB3.0.
+
+== JPA e POJO
+Si utilizzano oggetti di tipo POJO (Plain Old Java Object) e
+la persistenza riguarda:
+
+- il salvataggio dei dati
+- la loro consultazione
+- la loro gestione (aggiornamento, cancellazione,...)
+
+== Hibernate come JPA
+Hibernate è ORM che implementa la specifica JPA.
+
+- Esistono diverse specifiche JPA (1.0, 2.0, 2.1…)
+- Queste specifiche sono implementate in Hibernate in varie versioni.
+- Noi utilizzeremo come riferimento la specifica JPA 2.0, che è implementata
+  in Hibernate 4.x e successivi.
+
+== Persistenza
+
+Con Persistent Data ci si riferisce a dati permanenti in una applicazione
+
+- i dati sono resi permanente salvandoli in uno storage come ad esempio un
+  Database, un Filesystem o una memoria flash
+- i dati sono mantenuti anche dopo i riavvii
+
+== Annotazioni JPA
+
+Le caratteristiche degli oggetti coinvolti - prevalentemente entity - sono
+definite da annotazioni specifiche.
+
+In precedenza si utilizzavano metadati inseriti appositi file XML, separati
+dal codice Java.
+
+ Gli XML hibernate per esempio ancora si trovano su software obsoleti.
+
+== @Entity
+Le entity in JPA sono gli oggetti persistenti
+
+per esempio i dati degli articoli di un blog possono essere riassunti una
+apposita entity:
+[source,java]
+----
+@Entity // obbligatorio sugli oggetti da persistere
+public class BlogEntry {
+  @Id @GeneratedValue
+  private Integer id;
+  @Column(nullable=false)
+  private String title;
+  private String summary;
+  private String body;
+  private Date date;
+  …
+}
+----
+
+== Annotazioni JPA^2^
+
+Le annotazioni come `@Entity`, `@Id` … sono utilizzate in Java sui vari elementi
+coinvolti nella persistenza per indicare quale comportamento deve avere il JPA
+
+Con JPA qui si intende il framework che implementa la specifica JPA (ad esempio _Hibernate_).
+
