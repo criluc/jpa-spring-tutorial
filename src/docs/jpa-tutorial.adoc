@@ -108,7 +108,7 @@ Per esempio i dati degli articoli di un blog possono essere riassunti una
 apposita entity, annotata appositamente con `@Entity`:
 [source,java]
 ----
-include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
+include::../main/java/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
 ----
 
 == @Id
@@ -121,13 +121,13 @@ Occorre annotare con `@Id` il campo che identifica la chiave primaria:
 
 == Chiavi primarie
 
-- Se necessario è possibile utilizzare chiavi primarie composte – ma di solito
-  non è preferibile farlo. Meglio evitare di rendere meno chiaro il codice.
+- Se necessario è possibile creare chiavi primarie composte – anche se
+  solitamente non è consigliabile.
 
 - Si può indicare una strategia per la generazione automatica dei valori delle
 chiavi primarie con:
 [source,java]
 ----
-include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=15..17]
+include::../main/java/it/besmartbeopen/model/BlogEntry.java[lines=15..18]
 ----
 

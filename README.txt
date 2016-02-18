@@ -32,9 +32,13 @@ In emacs:
 E nel buffer specifico poi (jpa-tutorial.txt):
  M-x adoc-mode
 
-== Auto-compilazione
+== Auto ri-compilazione via gradle
 
-Via guard, auto ricompila su ogni modifica dei file .adoc il corrispondente .html:
+./gradlew asciidoctor --continuous
+
+=== Auto compilazione via guard
+
+Auto ricompila su ogni modifica dei file .adoc il corrispondente .html:
 
  gem install guard guard-shell
  guard start
