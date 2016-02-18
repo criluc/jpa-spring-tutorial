@@ -6,15 +6,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
-@Entity @Table
+@Entity // obbligatorio sugli oggetti da persistere
 public class BlogEntry {
 
-  @Id @GeneratedValue
+  @Id // identifica la chiave primaria
+  @GeneratedValue // indica che il valore è autogenerato dall'ORM/DB
   private Integer id;
 
-  @Column(nullable=false)
+  @Column(nullable=false) // indica che il valore è obbligatorio
   private String title;
 
   private String summary;

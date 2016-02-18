@@ -37,14 +37,14 @@ public class BlogEntry {
 
   @Id @GeneratedValue
   private Integer id;
-  
+
   @Column(nullable=false)
   private String title;
-  
+
   private String summary;
-  
+
   private String body;
-  
+
   private Date date;
 }
 ----
@@ -99,17 +99,7 @@ per esempio i dati degli articoli di un blog possono essere riassunti una
 apposita entity:
 [source,java]
 ----
-@Entity // obbligatorio sugli oggetti da persistere
-public class BlogEntry {
-  @Id @GeneratedValue
-  private Integer id;
-  @Column(nullable=false)
-  private String title;
-  private String summary;
-  private String body;
-  private Date date;
-  …
-}
+include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=10..25]
 ----
 
 == Annotazioni JPA^2^
@@ -119,3 +109,21 @@ coinvolti nella persistenza per indicare quale comportamento deve avere il JPA
 
 Con JPA qui si intende il framework che implementa la specifica JPA (ad esempio _Hibernate_).
 
+== @Id
+Con `@Id` occorre annotare il campo che identifica la chiave primaria:
+
+- Di solito è di tipo numerico o di tipo stringa
+- Ci deve essere un solo campo annotato con `@Id` per entity.
+- Le entity sono confrontate tramite il metodo equals
+- In questo occorre utilizzare il campo annotato con `@Id`
+
+
+== Chiavi primarie
+
+- Se necessario è possibile utilizzare chiavi composte – ma è da evitare per rendere più chiaro il codice.
+
+- Si può indicare una strategia per la generazione automatica dei valori delle chiavi primarie con:
+[source,java]
+----
+include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=13..15]
+----
