@@ -44,12 +44,20 @@ gli oggetti (istanze di classi) e i database.
 
 == Java Persistence API
 
-JPA è una specifica java (_JSR_) per *accedere*, *memorizzare* e *gestire* dati tra
+JPA è una specifica java (_JSR_) per *accedere*, *memorizzare* e *gestire* dati di
 oggetti Java specifici e database relazionali.
 
-È considerato come l'_ORM_ standard per rendere i dati persistenti in ambiente Java.
+È considerato l'_ORM_ standard in ambiente Java.
 
   È stato inizialmente definito nella specifica EJB3.0.
+
+== Hibernate come JPA
+Hibernate è un ORM che implementa la specifica JPA.
+
+- Esistono diverse specifiche JPA (1.0, 2.0, 2.1…)
+- Queste specifiche sono implementate in Hibernate in varie versioni.
+- Noi utilizzeremo come riferimento la specifica JPA 2.0, che è implementata
+  in Hibernate a partire dalla 4.0.
 
 == Una entity
 [source,java]
@@ -67,7 +75,7 @@ public class BlogEntry {
 
   private String body;
 
-  @Temporal
+  @Temporal(TemporalType.TIMESTAMP) // genererà un campo date di tipo 'TIMESTAMP'
   private Date date;
 }
 ----
@@ -76,68 +84,50 @@ public class BlogEntry {
 Si utilizzano oggetti di tipo POJO (Plain Old Java Object) e
 la persistenza riguarda:
 
-- il salvataggio dei dati
+- il salvataggio dei valori dei campi di questi oggetti
 - la loro consultazione
 - la loro gestione (aggiornamento, cancellazione,...)
-
-== Hibernate come JPA
-Hibernate è ORM che implementa la specifica JPA.
-
-- Esistono diverse specifiche JPA (1.0, 2.0, 2.1…)
-- Queste specifiche sono implementate in Hibernate in varie versioni.
-- Noi utilizzeremo come riferimento la specifica JPA 2.0, che è implementata
-  in Hibernate a partire dalla 4.0.
-
-== Persistenza
-
-Con Persistent Data ci si riferisce a dati permanenti in una applicazione
-
-- i dati sono resi permanente salvandoli in uno storage come ad esempio un
-  Database, un Filesystem o una memoria flash
-- i dati sono mantenuti anche dopo i riavvii
 
 == Annotazioni JPA
 
 Le caratteristiche degli oggetti coinvolti - prevalentemente entity - sono
 definite da annotazioni specifiche.
 
-In precedenza si utilizzavano metadati inseriti appositi file XML, separati
-dal codice Java.
+Queste annotazioni indicano quale comportamento deve avere il JPA (ciò che
+implementa la specifica JPA, per esempio Hibernate).
 
- Gli XML hibernate per esempio ancora si trovano su software obsoleti.
+ In precedenza si utilizzavano metadati inseriti appositi file XML, separati
+ dal codice Java.
+
+  Si trovano ancora `XML` di Hibernate su software un po' datati.
 
 == @Entity
-Le entity in JPA sono gli oggetti persistenti
+Le entity in JPA sono gli oggetti persistenti.
 
-per esempio i dati degli articoli di un blog possono essere riassunti una
-apposita entity:
+Per esempio i dati degli articoli di un blog possono essere riassunti una
+apposita entity, annotata appositamente con `@Entity`:
 [source,java]
 ----
 include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
 ----
 
-== Annotazioni JPA^2^
-
-Le annotazioni come `@Entity`, `@Id` … sono utilizzate in Java sui vari elementi
-coinvolti nella persistenza per indicare quale comportamento deve avere il JPA
-
-Con JPA qui si intende il framework che implementa la specifica JPA (ad esempio _Hibernate_).
-
 == @Id
-Con `@Id` occorre annotare il campo che identifica la chiave primaria:
+Occorre annotare con `@Id` il campo che identifica la chiave primaria:
 
-- Di solito è di tipo numerico o di tipo stringa
+- Solitamente è di tipo numerico o stringa
 - Ci deve essere un solo campo annotato con `@Id` per entity.
-- Le entity sono confrontate tramite il metodo equals
-- In questo occorre utilizzare il campo annotato con `@Id`
-
+- Visto che le entity sono confrontate tramite il metodo equals, occorre che
+  si utilizzi in questi confronti il campo annotato con `@Id`.
 
 == Chiavi primarie
 
-- Se necessario è possibile utilizzare chiavi composte – ma è da evitare per rendere più chiaro il codice.
+- Se necessario è possibile utilizzare chiavi primarie composte – ma di solito
+  non è preferibile farlo. Meglio evitare di rendere meno chiaro il codice.
 
-- Si può indicare una strategia per la generazione automatica dei valori delle chiavi primarie con:
+- Si può indicare una strategia per la generazione automatica dei valori delle
+chiavi primarie con:
 [source,java]
 ----
-include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=13..15]
+include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=15..17]
 ----
+
