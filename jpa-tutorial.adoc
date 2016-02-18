@@ -1,62 +1,76 @@
 = Introduzione a JPA
-:author: Marco Andreini
+Marco Andreini <marco.andreini@gmail.com>
+2016-02-18
 :source-highlighter: highlightjs
 :backend: revealjs
 :revealjs_theme: night
 :revealjs_slideNumber: true
 
-== Oggetti -> tabelle
+== Architettura multi strato
 
-Serializzare e deserializzare gli oggetti sul database può
-risultare particolarmente lungo da implementare:
+Per creare applicazioni - anche complesse - si può utilizzare una architettura
+multi-strato (_n-tier_).
 
-* occorre generare una *INSERT* per ogni nuovo oggetto salvato
-* occorre generare una *UPDATE* per ogni oggetto da risalvare
-* occorre generare una *DELETE* per ogni oggetto da cancellare.
+Ciascuno strato:
+
+ - si occupa di un insieme di funzionalità logicamente separato;
+ - comunica con il precedente e il successivo;
+ - è sviluppato separatamente e indipendentemente dagli altri.
+
+
+== Architettura a tre livelli
+Le applicazioni web sono spesso strutturate su *three-tier architecture*:
+
+1. livello di presentazione, con la quale si interagisce direttamente con l'utente
+2. livello applicativo (_businness logic_), si occupa della logica di funzionamento
+3. livello dati, si occupa dell'immagazzinamento dei dati su database
 
 == Object Relational Mapping
-L'ORM è il processo di trasformazione dei dati tra gli oggetti (istanze di
-classi) e i database.
+* L'ORM si occupa di automatizzare il processo di trasformazione dei dati tra
+gli oggetti (istanze di classi) e i database.
+* Perché è utile?
 
-.È utile perché?
-- semplifica enormemente il lavoro di interfacciamento al database;
-- evita di dover scrivere le procedure di trasformazione a mano.
+** semplifica enormemente il lavoro di interfacciamento al database;
+** evita di dover scrivere le procedure di trasformazione a mano;
+** ci vogliamo concentrare sulla _logica di funzionamento_ e non sulla
+ struttura relazionale del database.
 
-== ORM per il web
-Le applicazioni _Web_ in modo particolare possono dipendere da un particolare
-ORM
+== ORM: altri benefici
 
-- Ogni interazione su Web è separata (richieste separate)
-- La persistenza dello stato deve essere demandata all'ORM.
+- Permette una eventuale sincronizzazione automatica degli oggetti su database
+- È piuttosto indipendente dal tipo di database
+- Astrazione sui metodi di interrogazione
+- Prestazioni: utilizzando meccanismi di cache semi-automatici
+
+== Java Persistence API
+
+JPA è una specifica java (_JSR_) per *accedere*, *memorizzare* e *gestire* dati tra
+oggetti Java specifici e database relazionali.
+
+È considerato come l'_ORM_ standard per rendere i dati persistenti in ambiente Java.
+
+  È stato inizialmente definito nella specifica EJB3.0.
 
 == Una entity
 [source,java]
 ----
-@Entity
+@Entity // genererà una TABLE di nome blog_entry
 public class BlogEntry {
 
-  @Id @GeneratedValue
+  @Id @GeneratedValue // genera una INT PRIMARY KEY autoincrementale di nome id
   private Integer id;
 
-  @Column(nullable=false)
+  @Column(nullable=false) // genererà un campo title di tipo VARCHAR NOT NULL
   private String title;
 
-  private String summary;
+  private String summary; // semplici VARCHAR
 
   private String body;
 
+  @Temporal
   private Date date;
 }
 ----
-
-== Java Persistence API
-
-JPA è una specifica java (JSR) per accedere, persistere e gestire dati tra
-oggetti Java specifici e database relazionali.
-
-È considerato come l'ORM standard per rendere i dati persistenti in ambiente Java.
-
-È stato inizialmente definito nella specifica EJB3.0.
 
 == JPA e POJO
 Si utilizzano oggetti di tipo POJO (Plain Old Java Object) e
@@ -72,7 +86,7 @@ Hibernate è ORM che implementa la specifica JPA.
 - Esistono diverse specifiche JPA (1.0, 2.0, 2.1…)
 - Queste specifiche sono implementate in Hibernate in varie versioni.
 - Noi utilizzeremo come riferimento la specifica JPA 2.0, che è implementata
-  in Hibernate 4.x e successivi.
+  in Hibernate a partire dalla 4.0.
 
 == Persistenza
 
@@ -99,7 +113,7 @@ per esempio i dati degli articoli di un blog possono essere riassunti una
 apposita entity:
 [source,java]
 ----
-include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=10..25]
+include::src/main/java/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
 ----
 
 == Annotazioni JPA^2^
