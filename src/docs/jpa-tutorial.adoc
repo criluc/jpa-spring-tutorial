@@ -1,10 +1,11 @@
 = Introduzione a JPA
-Marco Andreini <marco.andreini@gmail.com>
+Marco Andreini <marco.andreini@besmartbeopen.it>
 2016-02-18
 :source-highlighter: highlightjs
 :backend: revealjs
 :revealjs_theme: night
 :revealjs_slideNumber: true
+:sourcedir: ../main/java
 
 == Architettura multi strato
 
@@ -112,7 +113,7 @@ Per esempio i dati degli articoli di un blog possono essere riassunti una
 apposita entity, annotata appositamente con `@Entity`:
 [source,java]
 ----
-include::../main/java/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
+include::{sourcedir}/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
 ----
 
 == @Id
@@ -132,7 +133,7 @@ Occorre annotare con `@Id` il campo che identifica la chiave primaria:
 chiavi primarie con:
 [source,java]
 ----
-include::../main/java/it/besmartbeopen/model/BlogEntry.java[lines=15..18]
+include::{sourcedir}/it/besmartbeopen/model/BlogEntry.java[lines=15..18]
 ----
 
 == @Column
@@ -154,21 +155,37 @@ Con @Table si possono annotare le entity con informazioni aggiuntive, permettend
 * eventuali vincoli di univocità (uniqueConstraints)
 * eventuali indici (indexes)
 
+== Persistence Unit
+
+* è definito dall'insieme di classi gestite da un'istanza dell'EntityManager
+* mappa un insieme di classi di entity su un database relazionale
+* effettua la serializzazione e deserializzazione controllate verso/dal database relazionale
+
+== Persistence Context
+* è l'insieme delle istanze di entity in un certo insieme di dati
+* conosce lo stato (`detached`, `managed`,...) delle istanze di entity correlate
+
 == EntityManager
 
-Per poter operare sulle serializzazione e deserializzazione delle entity si utilizza l'oggetto *EntityManager*
-In modo dipendente dal framework in uso l'entityManager può essere:
-
-* Injected dal framework in automatico
-* Creato a partire dall'`EntityManagerFactory`, creato e configurato una sola volta all'avvio dell'applicazione.
+[%step]
+* permette di interagire col _Persistence Context_
+* ha una API per gestire le istanze delle entity, interagendo col loro stato
+* permette di caricare, salvare, cercare... le istanze delle entity
+* In modo dipendente dal framework in uso l'entityManager è:
+** Injected dal framework in automatico (es. @PersistenceContext)
+** Creato a partire dall'`EntityManagerFactory`, creato e configurato una sola
+volta all'avvio dell'applicazione.
 
 
 == Operazioni sulle entity
-
+[%step]
 * recupero con chiave primaria
-* creazione
-* cancellazione
-* salvataggi automatici.
+** `EntityManager::find`
+** `EntityManager::getReference`
+* creazione -> `EntityManager::persist`
+* cancellazione -> `EntityManager::remove`
+* salvataggi automatici -> con la gestioni delle transazioni
+* ricerche -> `JPQL`
 
 == EntityManager::find
 
@@ -183,6 +200,14 @@ il metodo find è utilizzabile per interrogare gli entity object
 * se non ci sono risultati per la ricerca con la chiave indicata, l'operazione restituisce null.
 * se invece ci sono l'oggetto restituito dall'`EntityManager` diventa direttamente utilizzabile in Java
 
+== EntityManager::getReference
+
+accetta gli stessi parametri del metodo find
+[source,java]
+----
+ BlogEntry entry = entityManager.getReference(BlogEntry.class, myBlogId);
+----
+
 == EntityManager::persist
 
 gli oggetti annotati come entità sono regolari oggetti java fino a quando non
@@ -196,14 +221,6 @@ vengono resi persistenti dall'`EntityManager`
 * quando la persist viene invocato viene controllato che non ci siano oggetti
 con lo stesso id nel database, altrimenti viene sollevata una runtime
 exception: `EntityExistsException`
-
-== EntityManager::getReference
-
-accetta gli stessi parametri del metodo find
-[source,java]
-----
- BlogEntry entry = entityManager.getReference(BlogEntry.class, myBlogId);
-----
 
 * se l'oggetto non è trovato questo metodo restituisce un'eccezione `EntityNotFFoundException`
 * l'istanza è prelevata in modo lazely (non si prelavano i valori delle proprietà dal database)
@@ -222,4 +239,44 @@ si usa per cancellare una istanza della entità (quindi una riga) dal database:
 ** cioè sono interrotti gli automatismi di aggiornamento e di caricamento dei dati verso il db.
 
 
+== Transazioni
+
+
+== Ricerche `JPQL`
+
+E se volessimo cercare una `Person` per nome o cognome?
+
+[source,java]
+----
+include::{sourcedir}/it/besmartbeopen/query/Queries.java[lines=15..20]
+----
+
 == @MappedSuperclass
+
+Viene utilizzata per creare una gerarchia di oggetti che hanno dei campi in
+comune:
+
+[source,java]
+----
+include::{sourcedir}/it/besmartbeopen/model/BaseEntity.java[lines=11..21;46]
+----
+
+== @MappedSuperclass^(2)^
+
+Così altri oggetti possono ereditarne i campi, mantenendo le informazioni su
+tabelle diverse:
+
+[source,java]
+----
+include::{sourcedir}/it/besmartbeopen/model/Person.java[lines=6..19]
+----
+
+== Gerarchia di entity
+
+Notare che gli oggetti Person e quindi le righe della tabella person hanno:
+
+* firstname, lastname, phone, email
+* ma anche id, createdAt, updatedAt
+
+
+
