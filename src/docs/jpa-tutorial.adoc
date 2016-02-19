@@ -47,6 +47,9 @@ gli oggetti (istanze di classi) e i database.
 JPA è una specifica java (_JSR_) per *accedere*, *memorizzare* e *gestire* dati di
 oggetti Java specifici e database relazionali.
 
+È confinato nel package `javax.persistence` e non fa parte della dotazione
+standard JavaSE.
+
 È considerato l'_ORM_ standard in ambiente Java.
 
   È stato inizialmente definito nella specifica EJB3.0.
@@ -87,6 +90,7 @@ la persistenza riguarda:
 - il salvataggio dei valori dei campi di questi oggetti
 - la loro consultazione
 - la loro gestione (aggiornamento, cancellazione,...)
+- ogni oggetto tipicamente rappresenta una riga di una tabella
 
 == Annotazioni JPA
 
@@ -131,3 +135,91 @@ chiavi primarie con:
 include::../main/java/it/besmartbeopen/model/BlogEntry.java[lines=15..18]
 ----
 
+== @Column
+
+L'annotazione `@Column` può essere utilizzata su tutti i campi dell'oggetto per:
+
+* indicare il nome della colonna corrispondente (con `name=...`), che
+altrimenti sarà il nome del campo (opportunamente traslato)
+* indicare se il campo può assumere i valori `null` (_default_) o meno (con `nullable=false`)
+* indicare se la colonna corrispondente deve avere una chiave univoca (con `unique=true`)
+* Usati da usare in casi specifici, più di rado: columnDefinition, length, insertable, updatable, ...
+
+== @Table
+Con @Table si possono annotare le entity con informazioni aggiuntive, permettendo di indicare:
+
+* il nome della tabella (altrimenti è quello dell'entity)
+* il nome del catalogo
+* il nome dello schema
+* eventuali vincoli di univocità (uniqueConstraints)
+* eventuali indici (indexes)
+
+== EntityManager
+
+Per poter operare sulle serializzazione e deserializzazione delle entity si utilizza l'oggetto *EntityManager*
+In modo dipendente dal framework in uso l'entityManager può essere:
+
+* Injected dal framework in automatico
+* Creato a partire dall'`EntityManagerFactory`, creato e configurato una sola volta all'avvio dell'applicazione.
+
+
+== Operazioni sulle entity
+
+* recupero con chiave primaria
+* creazione
+* cancellazione
+* salvataggi automatici.
+
+== EntityManager::find
+
+il metodo find è utilizzabile per interrogare gli entity object
+[source,java]
+----
+ BlogEntry entry = entityManager.find(BlogEntry.class, myBlogId);
+----
+* il metodo find() accetta due paremetri
+** l'oggetto Entity
+** il valore della chiave primaria
+* se non ci sono risultati per la ricerca con la chiave indicata, l'operazione restituisce null.
+* se invece ci sono l'oggetto restituito dall'`EntityManager` diventa direttamente utilizzabile in Java
+
+== EntityManager::persist
+
+gli oggetti annotati come entità sono regolari oggetti java fino a quando non
+vengono resi persistenti dall'`EntityManager`
+[source,java]
+----
+ entityManager.persist(myBlogEntry);
+----
+* il metodo persist(entityObject) rende persistente l'entità nel database
+(esegue la `INSERT` SQL)
+* quando la persist viene invocato viene controllato che non ci siano oggetti
+con lo stesso id nel database, altrimenti viene sollevata una runtime
+exception: `EntityExistsException`
+
+== EntityManager::getReference
+
+accetta gli stessi parametri del metodo find
+[source,java]
+----
+ BlogEntry entry = entityManager.getReference(BlogEntry.class, myBlogId);
+----
+
+* se l'oggetto non è trovato questo metodo restituisce un'eccezione `EntityNotFFoundException`
+* l'istanza è prelevata in modo lazely (non si prelavano i valori delle proprietà dal database)
+* lo stato dell'entità (title, excerpt, body...) sono prelevati la prima volta che si accede all'oggetto
+
+== EntityManager::remove
+
+si usa per cancellare una istanza della entità (quindi una riga) dal database:
+[source,java]
+----
+ entityManager.remove(myBlogEntry);
+----
+* l'entityObject passato deve essere gestito dall'entityManager pena il fallimento della rimozione
+* l'operazione di cancellazione dal db può avvenire successivamente (dopo la `EntityManager::flush()`)
+* dopo la chiamata, l'entity diventerà "detached" dal entityManager e non più gestita
+** cioè sono interrotti gli automatismi di aggiornamento e di caricamento dei dati verso il db.
+
+
+== @MappedSuperclass

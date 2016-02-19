@@ -2,7 +2,7 @@ buildscript {
   repositories {
     jcenter()
   }
-  
+
   dependencies {
     classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.0'
     classpath 'org.ysb33r.gradle:vfs-gradle-plugin:1.0-beta1'
@@ -17,8 +17,10 @@ plugins {
 
 apply plugin: 'com.github.jruby-gradle.base'
 apply plugin: 'org.ysb33r.vfs'
-apply plugin: 'java'
 apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
 
 ext {
   revealjsVersion = '3.2.0'
@@ -29,8 +31,23 @@ ext {
 }
 
 dependencies {
+  repositories {
+    jcenter()
+    mavenCentral()
+  }
+
   gems 'rubygems:slim:2.1.0'
   gems 'rubygems:thread_safe:0.3.4'
+
+  // java
+  compile('org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final')
+}
+
+eclipse {
+    classpath {
+         containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+         containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+    }
 }
 
 task download << {
@@ -64,7 +81,7 @@ asciidoctor {
       include 'reveal.js/**'
     }
   }
-  
+
   backends    'revealjs'
 
   attributes	'build-gradle': file('build.gradle'),
