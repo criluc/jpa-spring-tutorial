@@ -179,13 +179,60 @@ volta all'avvio dell'applicazione.
 
 == Operazioni sulle entity
 [%step]
+* creazione -> `EntityManager::persist`
 * recupero con chiave primaria
 ** `EntityManager::find`
 ** `EntityManager::getReference`
-* creazione -> `EntityManager::persist`
 * cancellazione -> `EntityManager::remove`
 * salvataggi automatici -> con la gestioni delle transazioni
 * ricerche -> `JPQL`
+
+== EntityManager::persist
+
+gli oggetti annotati come entità sono regolari oggetti java fino a quando non
+vengono resi persistenti dall'`EntityManager`
+[source,java]
+----
+ entityManager.persist(myBlogEntry);
+----
+* il metodo persist(entityObject) rende persistente l'entità nel database
+(esegue la `INSERT` SQL)
+
+== persist^(2)^
+
+* nella chiamata alla `persist` viene verificato che non ci siano oggetti
+con lo stesso *id* nel database, e nel caso viene sollevata una runtime
+exception: `EntityExistsException`
+
+* se l'oggetto non è trovato questo metodo restituisce un'eccezione `EntityNotFFoundException`
+* l'istanza è prelevata in modo lazely (non si prelavano i valori delle proprietà dal database)
+* lo stato dell'entità (title, excerpt, body...) sono prelevati la prima volta che si accede all'oggetto
+
+== Esempio di persist
+[source,java]
+----
+  BlogEntry myBlogEntry = new BlogEntry();
+  myBlogEntry.setDate(new Date());
+  myBlogEntry.setTitle("titolo dell'articolo");
+  myBlogEntry.setExcerpt("intestazione dell'articolo");
+  myBlogEntry.setBody("corpo dell'articolo");
+
+  entityManager.persist(myBlogEntry);
+----
+
+[options="header"]
+|===
+|id |title |excerpt |body |date
+
+|1
+|titolo dell'articolo
+|intestazione dell'articolo
+|corpo dell'articolo
+|2016-02-01 16:00:00
+
+...
+|===
+
 
 == EntityManager::find
 
@@ -207,24 +254,6 @@ accetta gli stessi parametri del metodo find
 ----
  BlogEntry entry = entityManager.getReference(BlogEntry.class, myBlogId);
 ----
-
-== EntityManager::persist
-
-gli oggetti annotati come entità sono regolari oggetti java fino a quando non
-vengono resi persistenti dall'`EntityManager`
-[source,java]
-----
- entityManager.persist(myBlogEntry);
-----
-* il metodo persist(entityObject) rende persistente l'entità nel database
-(esegue la `INSERT` SQL)
-* quando la persist viene invocato viene controllato che non ci siano oggetti
-con lo stesso id nel database, altrimenti viene sollevata una runtime
-exception: `EntityExistsException`
-
-* se l'oggetto non è trovato questo metodo restituisce un'eccezione `EntityNotFFoundException`
-* l'istanza è prelevata in modo lazely (non si prelavano i valori delle proprietà dal database)
-* lo stato dell'entità (title, excerpt, body...) sono prelevati la prima volta che si accede all'oggetto
 
 == EntityManager::remove
 
