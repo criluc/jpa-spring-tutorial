@@ -205,7 +205,7 @@ con lo stesso *id* nel database, e nel caso viene sollevata una runtime
 exception: `EntityExistsException`
 
 * se l'oggetto non è trovato questo metodo restituisce un'eccezione `EntityNotFFoundException`
-* l'istanza è prelevata in modo lazely (non si prelavano i valori delle proprietà dal database)
+* l'istanza è prelevata in modo lazy (non si prelavano i valori delle proprietà dal database)
 * lo stato dell'entità (title, excerpt, body...) sono prelevati la prima volta che si accede all'oggetto
 
 == Esempio di persist
@@ -213,9 +213,9 @@ exception: `EntityExistsException`
 ----
   BlogEntry myBlogEntry = new BlogEntry();
   myBlogEntry.setDate(new Date());
-  myBlogEntry.setTitle("titolo dell'articolo");
-  myBlogEntry.setExcerpt("intestazione dell'articolo");
-  myBlogEntry.setBody("corpo dell'articolo");
+  myBlogEntry.setTitle("Corso Java");
+  myBlogEntry.setExcerpt("JPA/Hibernate");
+  myBlogEntry.setBody("contenuti...");
 
   entityManager.persist(myBlogEntry);
 ----
@@ -225,9 +225,9 @@ exception: `EntityExistsException`
 |id |title |excerpt |body |date
 
 |1
-|titolo dell'articolo
-|intestazione dell'articolo
-|corpo dell'articolo
+|Corso Java
+|JPA/Hibernate
+|contenuti...
 |2016-02-01 16:00:00
 
 ...
@@ -249,11 +249,13 @@ il metodo find è utilizzabile per interrogare gli entity object
 
 == EntityManager::getReference
 
-accetta gli stessi parametri del metodo find
+accetta gli stessi parametri del metodo find:
 [source,java]
 ----
- BlogEntry entry = entityManager.getReference(BlogEntry.class, myBlogId);
+ BlogEntry entry = entityManager.getReference(BlogEntry.class, 1);
 ----
+
+  dove 1 è la chiave univoca di ricerca.
 
 == EntityManager::remove
 
@@ -306,6 +308,8 @@ Notare che gli oggetti Person e quindi le righe della tabella person hanno:
 
 * firstname, lastname, phone, email
 * ma anche id, createdAt, updatedAt
+
+== @Transient
 
 
 
