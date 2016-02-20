@@ -43,4 +43,5 @@ public abstract class BaseEntity {
   public void setUpdatedAt(Date updatedAt) {
     this.updatedAt = updatedAt;
   }
+  //...
 }

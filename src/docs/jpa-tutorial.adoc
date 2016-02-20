@@ -147,7 +147,7 @@ altrimenti sarà il nome del campo (opportunamente traslato)
 * Usati da usare in casi specifici, più di rado: columnDefinition, length, insertable, updatable, ...
 
 == @Table
-Con @Table si possono annotare le entity con informazioni aggiuntive, permettendo di indicare:
+Con `@Table` si possono annotare le entity con informazioni aggiuntive, permettendo di indicare:
 
 * il nome della tabella (altrimenti è quello dell'entity)
 * il nome del catalogo
@@ -157,9 +157,19 @@ Con @Table si possono annotare le entity con informazioni aggiuntive, permettend
 
 == Persistence Unit
 
-* è definito dall'insieme di classi gestite da un'istanza dell'EntityManager
-* mappa un insieme di classi di entity su un database relazionale
-* effettua la serializzazione e deserializzazione controllate verso/dal database relazionale
+* è definito dall'insieme di classi gestite da un'istanza dell'EntityManager.
+* definisce la corrispondaza di un insieme di classi di entity con un database
+relazionale
+* effettua la serializzazione e deserializzazione controllate verso/dal database
+relazionale
+
+== Persistence Unit^(2)^
+* è definito per mezzo del framework che implementa la specifica JPA
+* tipicamente si definiscono le *Persistence Unit* nel filel
+`META-INF/persistence.xml`:
+----
+include::{sourcedir}/META-INF/persistence.xml[]
+----
 
 == Persistence Context
 * è l'insieme delle istanze di entity in un certo insieme di dati
@@ -177,15 +187,14 @@ Con @Table si possono annotare le entity con informazioni aggiuntive, permettend
 volta all'avvio dell'applicazione.
 
 
-== Operazioni sulle entity
+== Operazioni di base sulle entity
 [%step]
 * creazione -> `EntityManager::persist`
 * recupero con chiave primaria
 ** `EntityManager::find`
 ** `EntityManager::getReference`
 * cancellazione -> `EntityManager::remove`
-* salvataggi automatici -> con la gestioni delle transazioni
-* ricerche -> `JPQL`
+* verifica della presenza -> `EntityManager::contains`
 
 == EntityManager::persist
 
@@ -198,7 +207,7 @@ vengono resi persistenti dall'`EntityManager`
 * il metodo persist(entityObject) rende persistente l'entità nel database
 (esegue la `INSERT` SQL)
 
-== persist^(2)^
+== EntityManager::persist^(2)^
 
 * nella chiamata alla `persist` viene verificato che non ci siano oggetti
 con lo stesso *id* nel database, e nel caso viene sollevata una runtime
@@ -233,7 +242,6 @@ exception: `EntityExistsException`
 ...
 |===
 
-
 == EntityManager::find
 
 il metodo find è utilizzabile per interrogare gli entity object
@@ -242,14 +250,16 @@ il metodo find è utilizzabile per interrogare gli entity object
  BlogEntry entry = entityManager.find(BlogEntry.class, myBlogId);
 ----
 * il metodo find() accetta due paremetri
-** l'oggetto Entity
+** la classe dell'entity
 ** il valore della chiave primaria
-* se non ci sono risultati per la ricerca con la chiave indicata, l'operazione restituisce null.
-* se invece ci sono l'oggetto restituito dall'`EntityManager` diventa direttamente utilizzabile in Java
+* se non ci sono risultati per la ricerca con la chiave indicata, l'operazione restituisce `null`.
+* se invece ci sono l'oggetto restituito dall'EntityManager diventa direttamente utilizzabile in Java
 
 == EntityManager::getReference
 
-accetta gli stessi parametri del metodo find:
+* Si utilizza per ottenere un oggetto non ancora caricato dal db, ma che contiene
+i corretti riferimenti.
+* Accetta gli stessi parametri del metodo find:
 [source,java]
 ----
  BlogEntry entry = entityManager.getReference(BlogEntry.class, 1);
@@ -269,17 +279,123 @@ si usa per cancellare una istanza della entità (quindi una riga) dal database:
 * dopo la chiamata, l'entity diventerà "detached" dal entityManager e non più gestita
 ** cioè sono interrotti gli automatismi di aggiornamento e di caricamento dei dati verso il db.
 
+== EntityManager::contains
 
-== Transazioni
+Per verificare che una istanza di entity sia gestita (`managed`)
+dal corrente _Persistence Context_ si utilizza il metodo `contains`:
+[source,java]
+----
+ if (entityManager.contains(myBlogEntry)) {
+  // ...
+----
 
+== EntityManager::merge
+
+* per rendere una istanza di un'entity gestita e persistente
+* se non esiste ancora (su db) l'istanza viene persistita
+* se esiste già (su db), l'istanza viene aggiornata
+
+[source,java]
+----
+ entityManager.merge(myBlogEntry);
+----
+
+== Entity lifecycle
+
+image::entity_lifecycle.jpg[Entity Lifecycle]
+
+== Entity lifecycle^(2)^
+
+* le entity che sono nello stato di managed/persistent possono essere modificati
+dall'applicazione
+* qualsiasi modifica a queste entity è *automaticamente identificata e
+persistita* al momento in cui sarà effettuata la `flush` del _Pesistence Context_
+* non è necessario effettuare chiamate a metodi particolari per
+rendere queste modifiche persisitenti
+* ci possono comunque essere altre modalità di gestire le transazioni.
 
 == Ricerche `JPQL`
 
-E se volessimo cercare una `Person` per nome o cognome?
+E se volessimo cercare una `Person` per nome o cognome? Ecco la
+`EntityManager::createQuery`
 
 [source,java]
 ----
 include::{sourcedir}/it/besmartbeopen/query/Queries.java[lines=15..20]
+----
+
+== JPQL
+
+Java Persistence Query Language
+
+* è usato per definire ricerche su entità persistenti
+* è simile a SQL, ma è definito sulle entità e non sulle tabelle
+* è indipendente dal meccanismo utilizzato per immagazzinare le
+entity stesse.
+
+[source,sql]
+.esempio
+----
+SELECT e FROM BlogEntry e WHERE e.date >= '2016-01-01' ORDER BY title ASC
+----
+
+== @NamedQuery
+
+* Si possono definire query statiche con nome
+** Raccomandate perché le query usufruiscono del sistema di *cache*
+[source,java]
+----
+@NamedQuery(name="ordered",  query="SELECT e FROM BlogEntry e ORDER BY e.date ASC")
+public class BlogEntry {
+...
+----
+
+[source,java]
+----
+public List<BlogEntry> allEntriesOrdered() {
+    return entityManager.createNamedQuery("ordered", BlogEntry.class).getResultList();
+}
+----
+
+== Criteria API
+
+* sono una alternativa in JPA 2.x per a JPQL
+* le query sono dinamiche
+* si compongono a partire da oggetti Java standard
+** le query sono create in modo typesafe
+* il `CriteriaBuidler` si ottiene utilizzando il metodo
+`EntityManager::getCriteriaBuilder`
+
+== Esempio di query con Criteria API
+
+[source,java]
+----
+CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+CriteriaQuery<BlogEntry> criteriaQuery = builder.createQuery(BlogEntry.class);
+Root<BlogEntry> be = criteriaQuery.from(BlogEntry.class);
+ParameterExpression<String> title = builder.parameter(String.Class);
+criteriaQuery.select(be).where(builder.equals(be.get("title"), title);
+
+TypedQuery<BlogEntry> typedQuery = entityManager.createQuery(criteriaQuery);
+typedQuery.setParameter(parameter, "il mio titolo");
+typedQuery.getSingleResult(); // recupera il blogentry con "il mio titolo"
+----
+
+== @Transient
+
+* si utilizza sui campi delle entity per indicare che il campo non è persistente
+* tipicamente il valore è calcolato in base ad altri campi
+[source,java]
+----
+
+class BlogEntry {
+...
+
+  @Transient
+  public String getLabel() {
+    return title + " " + date;
+  }
+}
 ----
 
 == @MappedSuperclass
@@ -308,8 +424,3 @@ Notare che gli oggetti Person e quindi le righe della tabella person hanno:
 
 * firstname, lastname, phone, email
 * ma anche id, createdAt, updatedAt
-
-== @Transient
-
-
-
