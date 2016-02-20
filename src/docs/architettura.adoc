@@ -1,4 +1,4 @@
-= Introduzione a JPA
+= Architettura di una applicazione basata su JPA
 Marco Andreini <marco.andreini@besmartbeopen.it>
 2016-02-20
 :source-highlighter: highlightjs
@@ -9,19 +9,45 @@ Marco Andreini <marco.andreini@besmartbeopen.it>
 
 == DAO
 
-== DTI
+[%step]
+* Domain Access Object sono oggetti utili ad astrarre e separare due
+sottosistemi diversi
+* tipicamente in ambiente JEE separano le interazioni con la persistenza
+dalla logica di funzionamento
+* si possono testare meglio le logiche di funzionamento sostituendo i DAO reali
+con degli ausili ad-hoc
+
+== DTO
+
+[%step]
+* Il Domain Transfer Object è un _Design Pattern_ usato per trasferire dati tra
+sottosistemi di un'applicazione
+* tipicamente non hanno alcuna logica di funzionamento, sono solo contenitori
+di dati
+* quindi non richiedono test
+* usati anche nella serializzazione per incapsulare dati anche provenienti
+da bean diversi.
 
 == Injection
 
+?
+
 == Controller
 
-== DataBinding
+* In alcuni framework Web è presente il concetto di "controller" - simile a
+quello espresso nel _Design Pattern_ *MVC*
+* si occupa di uno o più richieste web per oggetti speicifi
+
+== Data Binding
+
+?
 
 == Validazione
 
 * C'è l'ottima la specifica *Bean Validation* (JSR 303)
 * Si utilizzano le annotazioni sui campi dei _bean_ per indicare la tipologia di validazione
 * È indipendente dal framework e dall'application server
+* I validatori si possono estendere e personalizzare
 
 == javax.validation
 
@@ -43,49 +69,85 @@ class BlogEntry {
 ----
 
 
-== Principali vincoli di validazione
+== Vincoli
 
 |===
-| @DecimalMax | The value of the field or property must be a decimal value lower than or equal to the number in the value element.
-@DecimalMax("30.00")
-BigDecimal discount;
-@DecimalMin
-The value of the field or property must be a decimal value greater than or equal to the number in the value element.
-@DecimalMin("5.00")
-BigDecimal discount;
-@Digits
-The value of the field or property must be a number within a specified range. The integer element specifies the maximum integral digits for the number, and the fraction element specifies the maximum fractional digits for the number.
-@Digits(integer=6, fraction=2)
-BigDecimal price;
-@Future
-The value of the field or property must be a date in the future.
-@Future
-Date eventDate;
-@Max
-The value of the field or property must be an integer value lower than or equal to the number in the value element.
-@Max(10)
-int quantity;
-@Min
-The value of the field or property must be an integer value greater than or equal to the number in the value element.
-@Min(5)
-int quantity;
-@NotNull
-The value of the field or property must not be null.
-@NotNull
-String username;
-@Null
-The value of the field or property must be null.
-@Null
-String unusedString;
-@Past
-The value of the field or property must be a date in the past.
-@Past
-Date birthday;
-@Pattern
-The value of the field or property must match the regular expression defined in the regexp element.
-@Pattern(regexp="\\(\\d{3}\\)\\d{3}-\\d{4}")
-String phoneNumber;
-@Size
-The size of the field or property is evaluated and must match the specified boundaries. If the field or property is a String, the size of the string is evaluated. If the field or property is a Collection, the size of the Collection is evaluated. If the field or property is a Map, the size of the Map is evaluated. If the field or property is an array, the size of the array is evaluated. Use one of the optional max or min elements to specify the boundaries.
-@Size(min=2, max=240)
-String briefMessage;
+|@Digits |Il valore deve essere un numero in un certo range
+|@Max |Il valore deve essere un intero minore o uguale al numero indicato in `value`
+|@Min |Il valore deve essere un intero maggiore o uguale al numero indicato in `value`
+|@Size |La lunghezza del valore deve corrispondere ai limiti `min` e `max` indicati
+|===
+
+== Altri vincoli
+
+|===
+|@NotNull |Il valore deve essere diverso da `null`
+|@Null |Il valore essere `null`
+|@Future |Il valore deve essere una data nel futuro
+|@Past |Il valore deve essere una data nel passato
+|===
+
+== Altri vincoli^(2)^
+
+|===
+|@AssertTrue |il valore deve essere `true`
+|@AssertFalse |Il valore deve essere `false`
+|@Pattern |Il valore deve corrispondere alla _regular expression_ indicata in `regexp`
+|===
+
+
+== Cosa validare?
+Questo tipo di vincoli è inseribile sui metodi, sui campi, sui parametri e
+sui costruttori
+[source,java]
+----
+class Expirer {
+
+  public Expirer(@Min(10) intt days, @Future @NotNull Date expire) { ... }
+
+  @AssertTrue
+  public boolean isValid() { ... }
+}
+----
+
+== Validazione esplicita
+
+Ottenuto il validatore si può validare un bean direttamente:
+[source,java]
+----
+ValidationFactory factory = Validation.buildDefaultValidationFactory();
+Validator validator = factory.getValidator();
+Set<ConstraintViolation> violations = validator.validate(myBlogEntry);
+----
+Il risultato è l'elenco delle violazioni della `myBlogEntry`.
+
+== Validatore dal framework
+
+Si può tipicamente ottenere via _injection_ dal framework:
+[source,java]
+----
+@Resource
+Validator validator;
+----
+
+== Validazione e JPA
+
+Utilizzando JPA si possono validare i campi delle entity
+[source,java]
+----
+class Person extends BaseEntity {
+  @NotNull     // obbligatorio
+  @Size(min=2) // i nomi sono minimo di 2 caratteri
+  @Column(nullable=false)
+  private String firstname;
+
+  @NotNull     // obblligatorio
+  @Size(min=2) // i cognomi sono minimo di 2 caratteri
+  @Column(nullable=false)
+  private String lastname;
+
+  //...
+}
+----
+In JPA tipicamente prima di persistere l'oggetto, verrà applicata la validazione.
+
