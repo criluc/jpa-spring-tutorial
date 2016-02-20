@@ -424,3 +424,13 @@ Notare che gli oggetti Person e quindi le righe della tabella person hanno:
 
 * firstname, lastname, phone, email
 * ma anche id, createdAt, updatedAt
+
+== Implementazioni JPA
+
+Esistono varie implementazioni JPA che tipicamente sono utilizzati all'interno
+di application server:
+
+* Hibernate, in JBoss/RedHat
+* EclipseLink, Oracle
+* OpenJPA
+...

@@ -1,0 +1,91 @@
+= Introduzione a JPA
+Marco Andreini <marco.andreini@besmartbeopen.it>
+2016-02-20
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+:sourcedir: ../main/java
+
+== DAO
+
+== DTI
+
+== Injection
+
+== Controller
+
+== DataBinding
+
+== Validazione
+
+* C'è l'ottima la specifica *Bean Validation* (JSR 303)
+* Si utilizzano le annotazioni sui campi dei _bean_ per indicare la tipologia di validazione
+* È indipendente dal framework e dall'application server
+
+== javax.validation
+
+Ecco un primo esempio di validatori:
+
+[source,java]
+----
+class BlogEntry {
+
+    @NotNull
+    String title;
+
+    @NotNull
+    String author;
+
+    @NotNull
+    Date date;
+}
+----
+
+
+== Principali vincoli di validazione
+
+|===
+| @DecimalMax | The value of the field or property must be a decimal value lower than or equal to the number in the value element.
+@DecimalMax("30.00")
+BigDecimal discount;
+@DecimalMin
+The value of the field or property must be a decimal value greater than or equal to the number in the value element.
+@DecimalMin("5.00")
+BigDecimal discount;
+@Digits
+The value of the field or property must be a number within a specified range. The integer element specifies the maximum integral digits for the number, and the fraction element specifies the maximum fractional digits for the number.
+@Digits(integer=6, fraction=2)
+BigDecimal price;
+@Future
+The value of the field or property must be a date in the future.
+@Future
+Date eventDate;
+@Max
+The value of the field or property must be an integer value lower than or equal to the number in the value element.
+@Max(10)
+int quantity;
+@Min
+The value of the field or property must be an integer value greater than or equal to the number in the value element.
+@Min(5)
+int quantity;
+@NotNull
+The value of the field or property must not be null.
+@NotNull
+String username;
+@Null
+The value of the field or property must be null.
+@Null
+String unusedString;
+@Past
+The value of the field or property must be a date in the past.
+@Past
+Date birthday;
+@Pattern
+The value of the field or property must match the regular expression defined in the regexp element.
+@Pattern(regexp="\\(\\d{3}\\)\\d{3}-\\d{4}")
+String phoneNumber;
+@Size
+The size of the field or property is evaluated and must match the specified boundaries. If the field or property is a String, the size of the string is evaluated. If the field or property is a Collection, the size of the Collection is evaluated. If the field or property is a Map, the size of the Map is evaluated. If the field or property is an array, the size of the array is evaluated. Use one of the optional max or min elements to specify the boundaries.
+@Size(min=2, max=240)
+String briefMessage;
