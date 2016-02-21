@@ -1,11 +1,9 @@
-package it.besmartbeopen.query;
+package jpa.introduction;
 
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import it.besmartbeopen.model.Person;
 
 public class Queries {
 

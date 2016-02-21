@@ -1,4 +1,4 @@
-package it.besmartbeopen.model;
+package jpa.introduction;
 
 import java.util.Date;
 

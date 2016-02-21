@@ -113,7 +113,7 @@ Per esempio i dati degli articoli di un blog possono essere riassunti una
 apposita entity, annotata appositamente con `@Entity`:
 [source,java]
 ----
-include::{sourcedir}/it/besmartbeopen/model/BlogEntry.java[lines=12..28]
+include::{sourcedir}/jpa/introduction/BlogEntry.java[lines=12..28]
 ----
 
 == @Id
@@ -133,7 +133,7 @@ Occorre annotare con `@Id` il campo che identifica la chiave primaria:
 chiavi primarie con:
 [source,java]
 ----
-include::{sourcedir}/it/besmartbeopen/model/BlogEntry.java[lines=15..18]
+include::{sourcedir}/jpa/introduction/BlogEntry.java[lines=15..18]
 ----
 
 == @Column
@@ -321,7 +321,7 @@ E se volessimo cercare una `Person` per nome o cognome? Ecco la
 
 [source,java]
 ----
-include::{sourcedir}/it/besmartbeopen/query/Queries.java[lines=15..20]
+include::{sourcedir}/jpa/introduction/Queries.java[lines=15..20]
 ----
 
 == JPQL
@@ -405,7 +405,7 @@ comune:
 
 [source,java]
 ----
-include::{sourcedir}/it/besmartbeopen/model/BaseEntity.java[lines=11..21;46]
+include::{sourcedir}/jpa/introduction/BaseEntity.java[lines=11..21;46]
 ----
 
 == @MappedSuperclass^(2)^
@@ -415,7 +415,7 @@ tabelle diverse:
 
 [source,java]
 ----
-include::{sourcedir}/it/besmartbeopen/model/Person.java[lines=6..19]
+include::{sourcedir}/jpa/introduction/Person.java[lines=6..19]
 ----
 
 == Gerarchia di entity
