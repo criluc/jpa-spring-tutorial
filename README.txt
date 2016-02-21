@@ -1,3 +1,12 @@
+= Generatore di slide via asciidoc + revealjs
+
+Viene utilizzato asciidoctor con tempalte revealjs per creare le presentazioni
+web.
+
+== Auto ri-compilazione via gradle
+
+./gradlew asciidoctor -t
+
 = Setup di asciidoctor
 
 In shell:
@@ -31,10 +40,6 @@ In emacs:
 
 E nel buffer specifico poi (jpa-tutorial.txt):
  M-x adoc-mode
-
-== Auto ri-compilazione via gradle
-
-./gradlew asciidoctor --continuous
 
 === Auto compilazione via guard
 

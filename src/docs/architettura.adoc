@@ -7,7 +7,7 @@ Marco Andreini <marco.andreini@besmartbeopen.it>
 :revealjs_slideNumber: true
 :sourcedir: ../main/java
 
-== DAO
+== D.A.O.
 
 [%step]
 * Domain Access Object sono oggetti utili ad astrarre e separare due
@@ -17,68 +17,172 @@ dalla logica di funzionamento
 * si possono testare meglio le logiche di funzionamento sostituendo i DAO reali
 con degli ausili ad-hoc
 
-== DTO
+== D.T.O.
 
 [%step]
 * Il Domain Transfer Object è un _Design Pattern_ usato per trasferire dati tra
 sottosistemi di un'applicazione
-* tipicamente non hanno alcuna logica di funzionamento, sono solo contenitori
-di dati
+* non hanno alcuna logica di funzionamento, sono solo contenitori di dati
 * quindi non richiedono test
-* usati anche nella serializzazione per incapsulare dati anche provenienti
+* sono usati anche nella serializzazione per incapsulare dati anche provenienti
 da bean diversi.
 
-== Injection
+== Dependency Injection
 
-?
+La *Dependency Injection* è una tecnica per assemblare le applicazioni da
+un insieme di classi concrete che implementano interfacce generiche.
+
+Questo permette la creazione di sistemi accoppiati in modo non vincolante
+(_loosely coupled_).
+
+-- dall'articolo di *Martin Fowler* sulla _Dependency Injection_
+
+== D.I. il problema
+
+[%step]
+* `PersonLister` -- `PersonFinder` <- `PersonFinderDao`
+* `PersonFinder` è una interfaccia per cercare contatti
+* `PersonLister` utilizza una `PersonFinder` per elencare le corrispondenze
+* `PersonFinderDao` è una classe concreta che implementa la `PersonFinder`,
+per esempio basandosi su `EntityManager`
+
+== D.I. l'obiettivo
+[%step]
+* il nostro obiettivo è avere codice che non dipende da classi concrete
+* per poter essere indipendenti dall'implementazione specifica
+* per poter sostituire i componenti senza riscrivere il codice
+* per poter testare ogni componente senza interagire con gli altri componenti
+
+== D.I. cosa non vogliamo
+
+[source,java]
+----
+public class BadPersonLister {
+
+  private PersonFinder finder;
+
+  public BadPersonLister(EntityManager em) {
+    this.finder = new PersonFinderDao(em);
+  }
+
+  // ... oppure
+  public void setPersonFinder(EntityManager em) {
+    this.finder = new PersonFinderDao(em);
+  }
+}
+----
+
+== D.I. cosa vogliamo
+
+[source,java]
+----
+public class PersonListener {
+
+  private PersonFinder finder;
+
+  public PersonLister(PersonFinder finder) {
+    this.finder = finder;
+  }
+
+  // oppure
+  public void setPersonFinder(PersonFinder finder) {
+    this.finder = finder;
+  }
+}
+----
+
+Non dipende più da alcun `EntityManager`
+
+== D.I. idea
+
+[%step]
+* L'idea di base è che una classe indichi all'applicazione che c'è una
+dipendenza, ma in modo piuttosto astratto
+* `PersonLister` *richiede una* `PersonFinder`
+* Una terza parte si occuperà di inserire (_inject_) a tempo di esecuzione una
+istanza che corrisponde alla richiesta (`PersonFinderDao`)
+* La terza parte è il cosiddetto *Inversion of Control Container* o
+*dependency injection framework*
+
+== Injection: esempio
+
+La specifica di riferimento è quella della JSR 330 - _Dependency Injection for Java_
+
+Gli oggetti si creano per mezzo del framework di injection che si occupa di
+inserire correttamente le dipendenze a runtime.
+[source,java]
+----
+public class PersonLister {
+
+  @Inject
+  PersonFinder finder;
+
+  // ...
+}
+----
+
+== Tipologie di Dependency Injection
+
+[source,java]
+----
+public class PersonLister {
+
+  @Inject // Field Injection
+  PersonFinder finder;
+
+  @Inject // Cunstructor Injection - da prefire perché più chiara
+  public class PersonLister(PersonFinder finder) {
+    this.finder = finder;
+  }
+}
+----
 
 == Controller
 
 * In alcuni framework Web è presente il concetto di "controller" - simile a
 quello espresso nel _Design Pattern_ *MVC*
-* si occupa di uno o più richieste web per oggetti speicifi
+* si occupa di uno o più richieste web per oggetti specifi
 
 == Data Binding
 
-?
+??
 
 == Validazione
 
-* C'è l'ottima la specifica *Bean Validation* (JSR 303)
+[%step]
+* Si incentra sulla specifica *Bean Validation* (JSR 303)
 * Si utilizzano le annotazioni sui campi dei _bean_ per indicare la tipologia di validazione
 * È indipendente dal framework e dall'application server
 * I validatori si possono estendere e personalizzare
 
 == javax.validation
 
-Ecco un primo esempio di validatori:
+Ecco un primo esempio di annotazioni di validazione:
 
 [source,java]
 ----
-class BlogEntry {
+public class MyEntry {
 
-    @NotNull
+    @NotNull // indica che è obbligatorio
     String title;
 
-    @NotNull
-    String author;
+    @Min(1)  // indica che il minimo è 1
+    int age;
 
-    @NotNull
+    @Past    // indica che deve essere una data passata
     Date date;
 }
 ----
 
-
 == Vincoli
 
 |===
+|@Min |Il valore deve essere un intero maggiore o uguale al numero indicato
+|@Max |Il valore deve essere un intero minore o uguale al numero indicato
 |@Digits |Il valore deve essere un numero in un certo range
-|@Max |Il valore deve essere un intero minore o uguale al numero indicato in `value`
-|@Min |Il valore deve essere un intero maggiore o uguale al numero indicato in `value`
-|@Size |La lunghezza del valore deve corrispondere ai limiti `min` e `max` indicati
 |===
 
-== Altri vincoli
+== Vincoli^(2)^
 
 |===
 |@NotNull |Il valore deve essere diverso da `null`
@@ -87,21 +191,27 @@ class BlogEntry {
 |@Past |Il valore deve essere una data nel passato
 |===
 
-== Altri vincoli^(2)^
+== Vincoli^(3)^
 
 |===
+|@Pattern |Il valore deve corrispondere alla _regular expression_ indicata in `regexp`
 |@AssertTrue |il valore deve essere `true`
 |@AssertFalse |Il valore deve essere `false`
-|@Pattern |Il valore deve corrispondere alla _regular expression_ indicata in `regexp`
+|@Size |La lunghezza del valore deve corrispondere ai limiti `min` e `max` indicati
 |===
 
 
 == Cosa validare?
-Questo tipo di vincoli è inseribile sui metodi, sui campi, sui parametri e
-sui costruttori
+Queste annotazioni sono applicabili su:
+
+ * metodi, per validare i valori restituiti
+ * campi, per validare i bean
+ * parametri, per validare il passaggio di parametri nei metodi
+ * costruttori, analogo al precedente
+
 [source,java]
 ----
-class Expirer {
+public class Expirer {
 
   public Expirer(@Min(10) intt days, @Future @NotNull Date expire) { ... }
 
@@ -115,39 +225,47 @@ class Expirer {
 Ottenuto il validatore si può validare un bean direttamente:
 [source,java]
 ----
-ValidationFactory factory = Validation.buildDefaultValidationFactory();
-Validator validator = factory.getValidator();
-Set<ConstraintViolation> violations = validator.validate(myBlogEntry);
+public class MyValidation {
+  public void run() {
+    ValidationFactory factory = Validation.buildDefaultValidationFactory();
+    Validator validator = factory.getValidator();
+    Set<ConstraintViolation> violations = validator.validate(myBlogEntry);
+    // ...
+  }
+}
 ----
 Il risultato è l'elenco delle violazioni della `myBlogEntry`.
 
 == Validatore dal framework
 
-Si può tipicamente ottenere via _injection_ dal framework:
+Il `validator` si può ottenere via _injection_ dal framework di riferimento:
 [source,java]
 ----
-@Resource
-Validator validator;
+public class MyClass {
+  @Resource
+  Validator validator;
+}
 ----
 
 == Validazione e JPA
 
-Utilizzando JPA si possono validare i campi delle entity
+Si possono annotare per la validazione i campi delle entity JPA
 [source,java]
 ----
-class Person extends BaseEntity {
+public class Person extends BaseEntity {
   @NotNull     // obbligatorio
-  @Size(min=2) // i nomi sono minimo di 2 caratteri
+  @Size(min=2) // i nomi devono avere almeno 2 caratteri
   @Column(nullable=false)
   private String firstname;
 
   @NotNull     // obblligatorio
-  @Size(min=2) // i cognomi sono minimo di 2 caratteri
+  @Size(min=2) // i cognomi devono avere almeno 2 caratteri
   @Column(nullable=false)
   private String lastname;
 
   //...
 }
 ----
-In JPA tipicamente prima di persistere l'oggetto, verrà applicata la validazione.
+I framework JPA prima di persistere l'oggetto, solitamente, applicano la
+validazione.
 
