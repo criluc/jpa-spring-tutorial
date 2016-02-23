@@ -107,3 +107,7 @@ Notare che gli oggetti Person e quindi le righe della tabella person hanno:
 * firstname, lastname, phone, email
 * ma anche id, createdAt, updatedAt
 
+== @Embeddable
+
+TODO
+

@@ -1,0 +1,36 @@
+= Web Framework Introduzione
+Marco Andreini <marco.andreini@besmartbeopen.it>
+2016-02-23
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+:sourcedir: ../main/java
+
+== Spring BOOT
+
+Bootable:: si avvia direttamente senza bisogno di un application server a parte,
+avendo integrato un Tomcat o Jetty.
+Minimal:: riduce al minimo la richiesta di configuraione iniziale, utilizzando
+le convenzioni sulle configurazioni
+Integration:: offre integrazioni già pronte con molte funzionalità utili
+
+== start.spring.io
+
+image::start_spring_io.png[start.spring.io]
+
+== Il progetto Spring BOOT
+
+* Cosa comprende?
+** la configurazione di minima
+** il pom (maven) per scaricare le dipendenze e compilare
+
+== Agenda
+
+* il main e relativo avvio
+* un controller
+** metodo senza parametri (list)
+** metodo con un parametro id (show)
+** salvataggio?
+* configurazione jpa
+* la generazione del jar
