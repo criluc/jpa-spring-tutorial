@@ -38,6 +38,7 @@ dependencies {
 
   gems 'rubygems:slim:2.1.0'
   gems 'rubygems:thread_safe:0.3.4'
+  gems 'rubygems:asciidoctor-diagram:1.2.0'
 
   // java
   compile('org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final')
@@ -83,6 +84,8 @@ asciidoctor {
     }
   }
 
+  requires = ['asciidoctor-diagram']
+  gemPath = jrubyPrepareGems.outputDir
   backends    'revealjs'
 
   attributes	'build-gradle': file('build.gradle'),

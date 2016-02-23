@@ -1,0 +1,107 @@
+= CSS e JS
+Marco Andreini <marco.andreini@besmartbeopen.it>
+2016-02-23
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+:sourcedir: ../main/java
+
+== L'informazione e la sua presentazione
+
+La pagina web è utile per trasferire le informazioni. Quest'ultima ha due aspetti fondamentali:
+
+i contenuti:: forniti con linguaggi di marcatura come HTML
+la presentazione:: determinati dall'interpretazione browser
+
+== Presentazione e browser
+
+* Ogni browser ha un suo modo predefinito di presentare il contenuto
+** a volte la presentazione è senbilmente diversa in funzione del browser
+* Ci sono comportamenti grafici predefiniti per gli elementi HTML
+* si possono comunque personalizzare i vari aspetti della presentazione
+con l'uso degli *stili*
+
+== Cascading Style Sheets (CSS)
+
+* definiscono il modo con cui il browser presenta il contenuto
+** la presentazione può riguardare più media (video, stampa, presentazione, audio, ...)
+** non uniforma la presentazione, fornisce delle indicazioni
+
+stylesheet:: sono documenti che comprendono un insieme di *regole di presentazione*
+regole:: sono istruzioni che permettono di indicare l'aspetto stilistico di uno
+o più elementi
+
+== CSS: regole
+
+.esempio
+[source,css]
+----
+h1 { color: green }
+----
+Le regole utilizzano un linguaggio semplice ed intuitivo attraverso il quale è
+abbastanza facile capirne la semantica, il linguaggio naturale di riferimento è
+naturalmente l'inglese.
+
+La regola dell'esempio sopra indica che il colore (`color`) del testo
+degli elementi di tipo h1 viene impostato a verde (`green`).
+
+== Regola
+
+[cols=">,<"]
+|===
+|`h1`
+|`{ color: green }`
+
+|selettore
+|dichiarazione
+|===
+
+selettore:: la parte prima delle parentesi graffe - specifica gli elementi
+assoggettati a questa regola ed è il collegamento tra il documento HTML e lo
+stile
+dichiarazione:: la parte dentro le graffe - è la parte della regola che imposta il
+comportamento stilistico degli oggetti coinvolti
+
+== Dichiarazione
+
+[cols=">,^,<"]
+|===
+|h1
+| { color:
+| green }
+
+|
+| proprietà
+| valore
+|===
+
+Una dichiarazione è a sua volta composta di due parti distinte, la proprietà
+ed il valore, le quali sono separate da ":" (due punti):
+proprietà:: la parte prima dei due punti - descrive una caratteristica che un
+oggetto può avere
+valore:: la parte dopo i due punti - specifica quale comportamento deve avere la
+proprietà selezionata
+
+== altro
+
+
+[ditaa]
+....
+                   +-------------+
+                   | Asciidoctor |-------+
+                   |   diagram   |       |
+                   +-------------+       | PNG out
+                       ^                 |
+                       | ditaa in        |
+                       |                 v
+ +--------+   +--------+----+    /---------------\
+ |        | --+ Asciidoctor +--> |               |
+ |  Text  |   +-------------+    |   Beautiful   |
+ |Document|   |   !magic!   |    |    Output     |
+ |     {d}|   |             |    |               |
+ +---+----+   +-------------+    \---------------/
+     :                                   ^
+     |          Lots of work             |
+     +-----------------------------------+
+....

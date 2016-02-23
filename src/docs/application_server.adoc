@@ -22,8 +22,13 @@ nel livello intermedio di una architettura three-tier già introdotta.
 ** è configurable in modalità complesse che ne permettono il fail-over
 (+ affidabilità) e il clustering (+ scalabilità orizzontale)
 
-== Servizi di supporto
+== Servizi disponibili
 
-* L'application server mette a disposizione diversi automatismi:
+* L'application server mette a disposizione:
 ** gestione automatica delle connessioni ai database, con *connection pooling*
 ** gestione automatica delle transazioni sul database
+** gestione della security
+* API disponibili tipicamente:
+** servlet
+** sessioni.
+
