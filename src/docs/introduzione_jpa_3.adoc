@@ -83,12 +83,10 @@ public class Account {
 }
 ----
 
-* nelle relazioni unidirezionale l'annotazione è solo nell’entità che possiede il riferimento
-* la tabella "persons" avrà una colonna con la chiave esterna che si riferisce alla tabella "accounts".
+* nelle relazioni unidirezionali l'annotazione è solo nell’entità che possiede il riferimento (_owning side_)
+* la tabella _persons_ avrà una colonna con la chiave esterna che si riferisce alla tabella _accounts_.
 
 == Relazione uno a uno bidirezionale
-
-* si utilizza l’annotazione *@OneToOne* e l'attributo *mappedBy*
 
 [source,java]
 ----
@@ -104,8 +102,62 @@ public class Account {
 }
 ----
 
-* nelle relazioni unidirezionale l'annotazione @OneToOne è su entrambe le entità
-* la mappedBy specifica il *nome* della proprietà java
+* l'annotazione @OneToOne è su entrambe le entità (_owning side_ e _inverse side_)
+* l'attributo *mappedBy* specifica il *nome* della proprietà java utilizzata nella @OneToOne che è _owning side_
+
+== L'importanza dell'owning side
+
+* il Persistence Runtime JPA (es. Hibernate) effettua aggiornamenti della relazione sul db solo quando si cambia l'owning side
+[source,java]
+----
+@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  private Account account;
+}
+@Entity @Table(name="accounts")
+public class Account {
+  @OneToOne(mappedBy="account")
+  private Person person;
+}
+...
+Person p = entityManager.getReference(Person.class, 1L);
+account.person = person; // Non viene modfificato il db
+
+Account a = entityManager.getReference(Account.class, 1L);
+person.account = a; // viene aggiornato il db
+----
+
+
+== Annotazione @JoinColumn
+
+* @JoinColumn permette di personalizzare la relazione:
+** *name*: (String default il nome della variabile)
+*** cambia il nome della colonna sul db
+** *insertable*: (boolean default true) 
+*** se false la colonna viene omessa nella insert
+** *updatable*: (boolean default true) 
+*** se false la colonna viene omessa nella update
+
+== Annotazione @JoinColumn^(2)^
+
+* @JoinColumn permette di personalizzare la relazione:
+** *nullable* (boolean default true)
+*** utilizzata per determinare il tipo di JOIN eseguita da jpa (INNER vs LEFT)
+** columnDefinition (String default "")
+*** frammento di SQL da utilizzare per la DDL della colonna
+
+== Annotazione @JoinColumn^(3)^
+
+[source,java]
+----
+@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  @JoinColumn(name="account_id", updatable = false)
+  private Account account;
+}
+----
 
 == @NamedQuery
 
