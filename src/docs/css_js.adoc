@@ -65,43 +65,94 @@ comportamento stilistico degli oggetti coinvolti
 
 == Dichiarazione
 
-[cols=">,^,<"]
-|===
-|h1
-| { color:
-| green }
+[source,css]
+----
+   h1        { color     : green  }
+// selettore { proprietà : valore }
+----
 
-|
-| proprietà
-| valore
-|===
-
-Una dichiarazione è a sua volta composta di due parti distinte, la proprietà
-ed il valore, le quali sono separate da ":" (due punti):
-proprietà:: la parte prima dei due punti - descrive una caratteristica che un
+proprietà:: la parte prima dei due punti che descrive una caratteristica che un
 oggetto può avere
-valore:: la parte dopo i due punti - specifica quale comportamento deve avere la
+valore:: la parte dopo i due punti che indica quale comportamento deve avere la
 proprietà selezionata
 
-== altro
+== Raggrupamenti di regole
 
+Raggruppare le regole perchè?
 
-[ditaa]
-....
-                   +-------------+
-                   | Asciidoctor |-------+
-                   |   diagram   |       |
-                   +-------------+       | PNG out
-                       ^                 |
-                       | ditaa in        |
-                       |                 v
- +--------+   +--------+----+    /---------------\
- |        | --+ Asciidoctor +--> |               |
- |  Text  |   +-------------+    |   Beautiful   |
- |Document|   |   !magic!   |    |    Output     |
- |     {d}|   |             |    |               |
- +---+----+   +-------------+    \---------------/
-     :                                   ^
-     |          Lots of work             |
-     +-----------------------------------+
-....
+[%step]
+* per semplificare la struttura e la scrittura dei CSS
+* per razionalizzare gli stili
+* per ridurre le dimensioni del foglio di stile
+
+== Raggruppare le regole per dichiarazione
+
+Riportando come selettore l'elenco dei singoli selettori separati da ","
+[source,css]
+----
+h1, h2, h3 { font-weight: bold }
+----
+corrispondente a:
+[source,css]
+----
+h1 { font-weight: bold }
+h2 { font-weight: bold }
+h3 { font-weight: bold }
+----
+
+== Raggruppare le regole per selettore:
+
+usando lo stesso selettore, ma elencando le dichiarazioni separate da ";"
+[source,css]
+----
+h1 { color: blue; font-weight: bold; text-align: center }
+----
+corrispondente a:
+[source,css]
+----
+h1 { color: blue }
+h1 { font-weight: bold }
+h1 { text-align: center}
+----
+
+== Raggruppamento misto
+
+Si possono anche mescolare le due tipologie di raggruppamento.
+[source,css]
+.esempio.css
+----
+h1, h2, h3 { color: blue; font-weight: bold }
+----
+
+== Associare i CSS alla pagina web
+
+Si può indicare un foglio di stile ad una pagina HTML
+
+[%step]
+. utilizzando l'attributo `style` su uno o più elementi HTML
+. utilizzando l'elemento `style` al documento HTML
+. collegando un foglio di stile esterno per mezzo dell'elemento `link`
+
+== Javascript
+
+[%step]
+* Il *javascript* è un linguaggio di programmazione interpretato
+* inizialmente progettato per permettere l'esecuzione di script all'interno del
+browser (quindi _lato client_)
+* nato per dare la possibilità di interagire con l'utente in modo più diretto
+* si utilizza il pattern event/observer per personalizzare le azioni dell'utente
+
+== Esempio di javascript
+
+Si inserisce nella pagina web con l'elemento `script`
+
+[source,html]
+----
+<html>
+ ...
+  <script type="text/javascript">
+    document.write('<p>Ciao mondo!</p>');
+  </script>
+ ...
+</html>
+----
