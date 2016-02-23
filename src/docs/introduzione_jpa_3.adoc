@@ -1,11 +1,111 @@
-= Introduzione a JPA^(2)^
-Marco Andreini <marco.andreini@besmartbeopen.it>
+= Introduzione a JPA^(3)^
+Cristian Lucchesi <cristian.lucchesi@gmail.com>
 2016-02-23
 :source-highlighter: highlightjs
 :backend: revealjs
 :revealjs_theme: night
 :revealjs_slideNumber: true
 :sourcedir: ../main/java
+
+== Relazioni e loro caratteristiche
+
+* gli oggetti possono contenere uno o più riferimenti ad altri oggetti
+** questi riferimenti prendono il nome di *relazioni*
+* le relazioni hanno diverse caratteristiche
+** la prima è la *direzionalità*, una relazione potrà essere:
+*** unidirezionale se un oggetto fa riferimento ad un altro ma non avviene il contrario
+*** bidirezionale se il riferimento tra gli oggetti è reciproco
+
+== Relazioni bidirezionali
+[source,java]
+----
+@Entity
+public class Person {
+  private Account account;
+}
+@Entity
+public class Account {
+  // Possessore
+  private Person owner;
+}
+----
+
+La Person ha una relazione con Account e viceversa.
+
+== Relazioni unidirezionali
+
+[source,java]
+----
+@Entity
+public class Person {
+  //... Altre proprietà
+  private Province bornIn;
+}
+@Entity
+public class Province {
+  private String name;
+}
+----
+
+Person ha una relazione con Province ma non viceversa.
+
+== Relazioni e opzionalità
+
+** altra caratteristica delle relazioni è l'opzionalità:
+*** non è detto che la relazione debba esistere necessariamente.
+*** Se non è obbligatoria, la relazione si dice opzionale.
+
+== Relazioni e molteplicità^(3)^
+
+* molteplicità della relazione
+* la relazione può sussistere verso uno o più oggetti, in entrambe le direzioni
+* si identificano pertanto tre tipi di relazioni
+** uno a uno 
+** uno a molti
+** molti a molti
+
+JPA permette di gestire le relazioni e di risparmiarci di scrivere molto codice
+
+== Relazione uno a uno unidirezionale
+
+* si utilizza l’annotazione *@OneToOne*
+
+[source,java]
+----
+@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  private Account account;
+}
+@Entity @Table(name="accounts")
+public class Account {
+  // Non c'è il campo Person
+}
+----
+
+* nelle relazioni unidirezionale l'annotazione è solo nell’entità che possiede il riferimento
+* la tabella "persons" avrà una colonna con la chiave esterna che si riferisce alla tabella "accounts".
+
+== Relazione uno a uno bidirezionale
+
+* si utilizza l’annotazione *@OneToOne* e l'attributo *mappedBy*
+
+[source,java]
+----
+@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  private Account account;
+}
+@Entity @Table(name="accounts")
+public class Account {
+  @OneToOne(mappedBy="account")
+  private Person person;
+}
+----
+
+* nelle relazioni unidirezionale l'annotazione @OneToOne è su entrambe le entità
+* la mappedBy specifica il *nome* della proprietà java
 
 == @NamedQuery
 
