@@ -18,7 +18,6 @@ Ciascuno strato:
  - comunica con il precedente e il successivo;
  - è sviluppato separatamente e indipendentemente dagli altri.
 
-
 == Architettura a tre livelli
 Le applicazioni web sono spesso strutturate su *three-tier architecture*:
 
@@ -190,11 +189,8 @@ volta all'avvio dell'applicazione.
 == Operazioni di base sulle entity
 [%step]
 * creazione -> `EntityManager::persist`
-* recupero con chiave primaria
-** `EntityManager::find`
-** `EntityManager::getReference`
+* recupero -> `EntityManager::find`
 * cancellazione -> `EntityManager::remove`
-* verifica della presenza -> `EntityManager::contains`
 
 == EntityManager::persist
 
@@ -255,18 +251,6 @@ il metodo find è utilizzabile per interrogare gli entity object
 * se non ci sono risultati per la ricerca con la chiave indicata, l'operazione restituisce `null`.
 * se invece ci sono l'oggetto restituito dall'EntityManager diventa direttamente utilizzabile in Java
 
-== EntityManager::getReference
-
-* Si utilizza per ottenere un oggetto non ancora caricato dal db, ma che contiene
-i corretti riferimenti.
-* Accetta gli stessi parametri del metodo find:
-[source,java]
-----
- BlogEntry entry = entityManager.getReference(BlogEntry.class, 1);
-----
-
-  dove 1 è la chiave univoca di ricerca.
-
 == EntityManager::remove
 
 si usa per cancellare una istanza della entità (quindi una riga) dal database:
@@ -278,27 +262,6 @@ si usa per cancellare una istanza della entità (quindi una riga) dal database:
 * l'operazione di cancellazione dal db può avvenire successivamente (dopo la `EntityManager::flush()`)
 * dopo la chiamata, l'entity diventerà "detached" dal entityManager e non più gestita
 ** cioè sono interrotti gli automatismi di aggiornamento e di caricamento dei dati verso il db.
-
-== EntityManager::contains
-
-Per verificare che una istanza di entity sia gestita (`managed`)
-dal corrente _Persistence Context_ si utilizza il metodo `contains`:
-[source,java]
-----
- if (entityManager.contains(myBlogEntry)) {
-  // ...
-----
-
-== EntityManager::merge
-
-* per rendere una istanza di un'entity gestita e persistente
-* se non esiste ancora (su db) l'istanza viene persistita
-* se esiste già (su db), l'istanza viene aggiornata
-
-[source,java]
-----
- entityManager.merge(myBlogEntry);
-----
 
 == Entity lifecycle
 
@@ -321,7 +284,7 @@ E se volessimo cercare una `Person` per nome o cognome? Ecco la
 
 [source,java]
 ----
-include::{sourcedir}/jpa/introduction/Queries.java[lines=15..20]
+include::{sourcedir}/jpa/introduction/Queries.java[lines=13..18]
 ----
 
 == JPQL
@@ -339,98 +302,3 @@ entity stesse.
 SELECT e FROM BlogEntry e WHERE e.date >= '2016-01-01' ORDER BY title ASC
 ----
 
-== @NamedQuery
-
-* Si possono definire query statiche con nome
-** Raccomandate perché le query usufruiscono del sistema di *cache*
-[source,java]
-----
-@NamedQuery(name="ordered",  query="SELECT e FROM BlogEntry e ORDER BY e.date ASC")
-public class BlogEntry {
-...
-----
-
-[source,java]
-----
-public List<BlogEntry> allEntriesOrdered() {
-    return entityManager.createNamedQuery("ordered", BlogEntry.class).getResultList();
-}
-----
-
-== Criteria API
-
-* sono una alternativa in JPA 2.x per a JPQL
-* le query sono dinamiche
-* si compongono a partire da oggetti Java standard
-** le query sono create in modo typesafe
-* il `CriteriaBuidler` si ottiene utilizzando il metodo
-`EntityManager::getCriteriaBuilder`
-
-== Esempio di query con Criteria API
-
-[source,java]
-----
-CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-CriteriaQuery<BlogEntry> criteriaQuery = builder.createQuery(BlogEntry.class);
-Root<BlogEntry> be = criteriaQuery.from(BlogEntry.class);
-ParameterExpression<String> title = builder.parameter(String.Class);
-criteriaQuery.select(be).where(builder.equals(be.get("title"), title);
-
-TypedQuery<BlogEntry> typedQuery = entityManager.createQuery(criteriaQuery);
-typedQuery.setParameter(parameter, "il mio titolo");
-typedQuery.getSingleResult(); // recupera il blogentry con "il mio titolo"
-----
-
-== @Transient
-
-* si utilizza sui campi delle entity per indicare che il campo non è persistente
-* tipicamente il valore è calcolato in base ad altri campi
-[source,java]
-----
-
-class BlogEntry {
-...
-
-  @Transient
-  public String getLabel() {
-    return title + " " + date;
-  }
-}
-----
-
-== @MappedSuperclass
-
-Viene utilizzata per creare una gerarchia di oggetti che hanno dei campi in
-comune:
-
-[source,java]
-----
-include::{sourcedir}/jpa/introduction/BaseEntity.java[lines=11..21;46]
-----
-
-== @MappedSuperclass^(2)^
-
-Così altri oggetti possono ereditarne i campi, mantenendo le informazioni su
-tabelle diverse:
-
-[source,java]
-----
-include::{sourcedir}/jpa/introduction/Person.java[lines=6..19]
-----
-
-== Gerarchia di entity
-
-Notare che gli oggetti Person e quindi le righe della tabella person hanno:
-
-* firstname, lastname, phone, email
-* ma anche id, createdAt, updatedAt
-
-== Implementazioni JPA
-
-Esistono varie implementazioni JPA che tipicamente sono utilizzati all'interno
-di application server:
-
-* Hibernate, in JBoss/RedHat
-* EclipseLink, Oracle
-* OpenJPA
-...

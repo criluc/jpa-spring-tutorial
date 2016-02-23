@@ -1,0 +1,109 @@
+= Introduzione a JPA^(2)^
+Marco Andreini <marco.andreini@besmartbeopen.it>
+2016-02-23
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+:sourcedir: ../main/java
+
+== Entity lifecycle
+
+image::entity_lifecycle.jpg[Entity Lifecycle]
+
+== Entity lifecycle^(2)^
+
+* le entity che sono nello stato di managed/persistent possono essere modificati
+dall'applicazione
+* qualsiasi modifica a queste entity è *automaticamente identificata e
+persistita* al momento in cui sarà effettuata la `flush` del _Pesistence Context_
+* non è necessario effettuare chiamate a metodi particolari per
+rendere queste modifiche persisitenti
+* ci possono comunque essere altre modalità di gestire le transazioni.
+
+
+== Altre operazioni su EntityManager
+
+In funzione del lifecycle appena visto introduciamo gli ulteriori metodi:
+
+* contains
+* merge
+* getReference
+
+== EntityManager::contains
+
+Per verificare che una istanza di entity sia gestita (`managed`)
+dal corrente _Persistence Context_ si utilizza il metodo `contains`:
+[source,java]
+----
+ if (entityManager.contains(myBlogEntry)) {
+  // ...
+----
+
+== EntityManager::merge
+
+* per rendere una istanza di un'entity gestita e persistente
+* se non esiste ancora (su db) l'istanza viene persistita
+* se esiste già (su db), l'istanza viene aggiornata
+
+[source,java]
+----
+ entityManager.merge(myBlogEntry);
+----
+
+== EntityManager::getReference
+
+* Si utilizza per ottenere un oggetto non ancora caricato dal db, ma che contiene
+i corretti riferimenti.
+* Accetta gli stessi parametri del metodo find:
+[source,java]
+----
+ BlogEntry entry = entityManager.getReference(BlogEntry.class, 1);
+----
+
+  dove 1 è la chiave univoca di ricerca.
+
+== @Transient
+
+* si utilizza sui campi delle entity per indicare che il campo non è persistente
+* tipicamente il valore è calcolato in base ad altri campi
+[source,java]
+----
+
+class BlogEntry {
+...
+
+  @Transient
+  public String getLabel() {
+    return title + " " + date;
+  }
+}
+----
+
+== @MappedSuperclass
+
+Viene utilizzata per creare una gerarchia di oggetti che hanno dei campi in
+comune:
+
+[source,java]
+----
+include::{sourcedir}/jpa/introduction/BaseEntity.java[lines=11..21;46]
+----
+
+== @MappedSuperclass^(2)^
+
+Così altri oggetti possono ereditarne i campi, mantenendo le informazioni su
+tabelle diverse:
+
+[source,java]
+----
+include::{sourcedir}/jpa/introduction/Person.java[lines=6..19]
+----
+
+== Gerarchia di entity
+
+Notare che gli oggetti Person e quindi le righe della tabella person hanno:
+
+* firstname, lastname, phone, email
+* ma anche id, createdAt, updatedAt
+

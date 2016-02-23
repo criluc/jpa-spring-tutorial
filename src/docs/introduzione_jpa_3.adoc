@@ -1,0 +1,60 @@
+= Introduzione a JPA^(2)^
+Marco Andreini <marco.andreini@besmartbeopen.it>
+2016-02-23
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+:sourcedir: ../main/java
+
+== @NamedQuery
+
+* Si possono definire query statiche con nome
+** Raccomandate perché le query usufruiscono del sistema di *cache*
+[source,java]
+----
+@NamedQuery(name="ordered",  query="SELECT e FROM BlogEntry e ORDER BY e.date ASC")
+public class BlogEntry {
+...
+----
+
+[source,java]
+----
+public List<BlogEntry> allEntriesOrdered() {
+    return entityManager.createNamedQuery("ordered", BlogEntry.class).getResultList();
+}
+----
+
+== Criteria API
+
+* sono una alternativa in JPA 2.x per a JPQL
+* le query sono dinamiche
+* si compongono a partire da oggetti Java standard
+** le query sono create in modo typesafe
+* il `CriteriaBuidler` si ottiene utilizzando il metodo
+`EntityManager::getCriteriaBuilder`
+
+== Esempio di query con Criteria API
+
+[source,java]
+----
+CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+CriteriaQuery<BlogEntry> criteriaQuery = builder.createQuery(BlogEntry.class);
+Root<BlogEntry> be = criteriaQuery.from(BlogEntry.class);
+ParameterExpression<String> title = builder.parameter(String.Class);
+criteriaQuery.select(be).where(builder.equals(be.get("title"), title);
+
+TypedQuery<BlogEntry> typedQuery = entityManager.createQuery(criteriaQuery);
+typedQuery.setParameter(parameter, "il mio titolo");
+typedQuery.getSingleResult(); // recupera il blogentry con "il mio titolo"
+----
+
+== Implementazioni JPA
+
+Esistono varie implementazioni JPA che tipicamente sono utilizzati all'interno
+di application server:
+
+* Hibernate, in JBoss/RedHat
+* EclipseLink, Oracle
+* OpenJPA
+...
