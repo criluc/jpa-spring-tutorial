@@ -122,12 +122,41 @@ public class Account {
 }
 ...
 Person p = entityManager.getReference(Person.class, 1L);
-account.person = person; // Non viene modfificato il db
+account.setPerson(p); // Non viene modificato il db
 
 Account a = entityManager.getReference(Account.class, 1L);
-person.account = a; // viene aggiornato il db
+person.setAccount(a); // viene aggiornato il db
 ----
 
+== Caricamento delle relazioni
+
+[source,java]
+.Esempio di find
+----
+Person p = entityManager.find(Person.class, 1L);
+----
+
+[source,sql]
+.query sql
+----
+select
+    personwith0_.id as id1_3_1_,
+    personwith0_.account_id as account_4_3_1_,
+    personwith0_.name as name2_3_1_,
+    personwith0_.surname as surname3_3_1_,
+    account1_.id as id1_2_0_,
+    account1_.username as username2_2_0_ 
+from
+    persons personwith0_ 
+left outer join
+    accounts account1_ 
+       on personwith0_.account_id=account1_.id 
+where
+    personwith0_.account_id=1
+----
+
+Quando si carica un oggetto tramite l'EntityManager questo si occupa di caricare gli oggetti
+collegati con le opportune join.
 
 == Annotazione @JoinColumn
 
@@ -158,6 +187,77 @@ public class Person {
   private Account account;
 }
 ----
+
+* viene indicato il nome della colonna da utilizzare per le join e che il campo non è aggiornabile
+
+== Relazioni uno a molti
+
+* un'entità può essere associata a più di un oggetto dello stesso tipo
+* la relazione viene detta di  tipo uno a molti.
+* analogamente alle relazioni uno ad uno può essere uni o bidirezionale
+
+In questo caso le annotazioni utilizzate sono:
+
+* *javax.persistence.OneToMany*
+* *javax.persistence.ManyToOne*
+
+== Relazioni uno a molti^(2)^
+
+[source,java]
+----
+@Entity @Table(name = "persons")
+public class Person {
+  @OneToMany(mappedBy = "owner")
+  private List<Car> cars = new ArrayList();
+}
+@Entity @Table(name = "cars")
+public class Car {
+  @ManyToOne
+  private Person owner;
+}
+----
+
+* una persona ha molte macchine @OneToMany
+* molte macchine hanno lo stesso (uno) proprietario @ManyToOne
+
+== Relazioni uno a molti^(3)^
+
+[source,java]
+----
+@Entity @Table(name = "orders")
+public class Order {
+  @Size(min = 1)
+  @OneToMany(mappedBy = "order")
+  private List<LineItem> lineItems = new ArrayList();
+}
+@Entity @Table(name = "order_line_items")
+public class LineItem {
+  @NotNull
+  @ManyToOne(optional = false)
+  private Order order;
+}
+----
+
+* un ordine ha molte righe di dettaglio (almeno una)
+* più righe di dettaglio appartengono allo stesso ordine
+* una riga di dettaglio deve appartenere ad un ordine
+
+== Relazioni uno a molti e owning side
+
+* il possessore della relazione _owning side_ è sempre con @ManyToMany
+* l'_inverse side_ è sempre con @OneToMany che è quella con l'attributo mappedBy
+* il JPA Engine tiene traccia dei cambiamenti solo sull'owning side
+** (come avviene per le relazioni @OneToOne)
+
+[source,java]
+----
+Order order = entityManager.find(Order.class, 1L);
+order.getLineItems().add(lineItem); // Non viene modificato il db
+
+LineItem li = entityManager.find(LineItem.class, 1L);
+li.setOrder(order); // viene aggiornato il db
+----
+
 
 == @NamedQuery
 
