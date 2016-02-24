@@ -182,7 +182,7 @@ include::{sourcedir}/META-INF/persistence.xml[]
 * permette di caricare, salvare, cercare... le istanze delle entity
 * In modo dipendente dal framework in uso l'entityManager è:
 ** Injected dal framework in automatico (es. @PersistenceContext)
-** Creato a partire dall'`EntityManagerFactory`, creato e configurato una sola
+** Creato a partire dall'EntityManagerFactory, creato e configurato una sola
 volta all'avvio dell'applicazione.
 
 
@@ -195,7 +195,7 @@ volta all'avvio dell'applicazione.
 == EntityManager::persist
 
 gli oggetti annotati come entità sono regolari oggetti java fino a quando non
-vengono resi persistenti dall'`EntityManager`
+vengono resi persistenti dall'EntityManager
 [source,java]
 ----
  entityManager.persist(myBlogEntry);
@@ -216,13 +216,12 @@ exception: `EntityExistsException`
 == Esempio di persist
 [source,java]
 ----
-  BlogEntry myBlogEntry = new BlogEntry();
-  myBlogEntry.setDate(new Date());
+  BlogEntry myBlogEntry = new BlogEntry(); // crea una istanza
+  myBlogEntry.setDate(new Date());         // imposta i valori
   myBlogEntry.setTitle("Corso Java");
   myBlogEntry.setExcerpt("JPA/Hibernate");
   myBlogEntry.setBody("contenuti...");
-
-  entityManager.persist(myBlogEntry);
+  entityManager.persist(myBlogEntry);      // persiste l'oggetto
 ----
 
 [options="header"]
