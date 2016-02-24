@@ -109,5 +109,89 @@ Notare che gli oggetti Person e quindi le righe della tabella person hanno:
 
 == @Embeddable
 
-TODO
+Con `@Embeddable` si definisce che le istanza della classe saranno inseribili
+all'interno di altre entity
+
+[source,java]
+----
+@Embeddable
+public class Address {    // le istanza di questo oggetto sono persistite
+  public String street;   // nell'oggetto che le contiene.
+  public String city;
+  public String country;
+}
+----
+
+== @Embedded
+
+Con `@Embedded` si definisce che l'oggetto indicato dal campo è contenuto in
+questa entity
+
+[source,java]
+----
+@Entity
+public class Person {
+  @Id
+  public Integer id;
+  public String firstname;
+  public String lastname;
+
+  @Embedded
+  public Address address;
+}
+----
+
+== @Embedded e @Embeddable all'opera
+
+[source,java]
+----
+Address address = new Address();
+address.setStreet("Crest Hill");
+address.setCity("Gotham City");
+address.setCountry("United States");
+
+Person person = new Person();
+person.setFirstname("Bruce");
+person.setLastname("Wayne");
+person.setAddress(address);
+----
+
+Il database ha una sola tabella correlata:
+|===
+|id |firstname |lastname |street |city |country
+
+|1
+|Bruce
+|Wayne
+|Crest Hill
+|Gotham City
+|United States
+|===
+
+== @Embedded multiple
+
+In caso si voglia avere più istanza di una tipologia `@Embedded` all'interno di
+una entity occorre rinominarne le colonne _(almeno n-1)_
+
+[source,java]
+----
+public class Person {
+  // ...
+
+  @Embedded
+  AttributeOverrides({
+    @AttributeOverride(name="street", column=@Column(name = "home_street")),
+    @AttributeOverride(name="city", column=@Column(name="home_city")),
+    @AttributeOverride(name="country", column=@Column(name = "home_country"))
+  })
+  private Address home;
+  @Embedded
+  AttributeOverrides({
+    @AttributeOverride(name="street", column=@Column(name = "work_street")),
+    @AttributeOverride(name="city", column=@Column(name="work_city")),
+    @AttributeOverride(name="country", column=@Column(name = "work_country"))
+  })
+  private Address work;
+}
+----
 

@@ -1,2 +1,3 @@
 /diag-*.png
-/diag-*.png.cache
+/diagram-*.png
+/*.png.cache

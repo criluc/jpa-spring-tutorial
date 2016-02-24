@@ -39,8 +39,17 @@ Questo permette la creazione di sistemi accoppiati in modo non vincolante
 
 == D.I. il problema
 
+[plantuml, diagram-classes, png]
+....
+class PersonLister
+interface PersonFinder
+class PersonFinderDao
+
+PersonLister *-- PersonFinder
+PersonFinder <|-- PersonFinderDao
+....
+
 [%step]
-* `PersonLister` -- `PersonFinder` <- `PersonFinderDao`
 * `PersonFinder` è una interfaccia per cercare contatti
 * `PersonLister` utilizza una `PersonFinder` per elencare le corrispondenze
 * `PersonFinderDao` è una classe concreta che implementa la `PersonFinder`,
@@ -62,12 +71,12 @@ public class BadPersonLister {
   private PersonFinder finder;
 
   public BadPersonLister(EntityManager em) {
-    this.finder = new PersonFinderDao(em);
+    this.finder = new PersonFinderDao(em); // non è testabile senza `em`
   }
 
   // ... oppure
   public void setPersonFinder(EntityManager em) {
-    this.finder = new PersonFinderDao(em);
+    this.finder = new PersonFinderDao(em); // non è testabile senza `em`
   }
 }
 ----
@@ -131,8 +140,9 @@ public class PersonLister {
   PersonFinder finder;
 
   @Inject // Cunstructor Injection - da prefire perché più chiara
-  public class PersonLister(PersonFinder finder) {
+  public PersonLister(PersonFinder finder) {
     this.finder = finder;
   }
 }
 ----
+

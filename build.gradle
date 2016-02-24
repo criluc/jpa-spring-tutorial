@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.*
+
 buildscript {
   repositories {
     jcenter()
@@ -27,7 +29,8 @@ ext {
   asciidoctorBackendVersion = 'master'
   downloadDir = new File(buildDir,'download')
   templateDir = new File(downloadDir,'templates')
-  revealjsDir   = new File(downloadDir,'reveal.js')
+  revealjsDir  = new File(downloadDir,'reveal.js')
+  highlightjs = new File(downloadDir, 'highlight.js')
 }
 
 dependencies {
@@ -66,6 +69,21 @@ task download << {
     templateDir, recursive:true, overwrite:true
     cp "zip:https://github.com/hakimel/reveal.js/archive/${revealjsVersion}.zip!reveal.js-${revealjsVersion}",
     revealjsDir, recursive:true, overwrite:true
+    cp "http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js",
+    highlightjs, recursive:true, overwrite:true
+  }
+
+  // replace highlight.js with newer version ...
+  copy {
+    from "${revealjsDir}/plugin/highlight/highlight.js"
+    into temporaryDir
+    filter(HeadFilter, lines:26)
+    filter(ConcatFilter, append:highlightjs)
+  }
+  // ... and place it on the original path.
+  copy {
+    from "${temporaryDir}/highlight.js"
+    into "${revealjsDir}/plugin/highlight"
   }
 }
 
@@ -107,7 +125,7 @@ asciidoctor {
   'idseparator':'-',
   'docinfo1':'true',
   'revealjs_theme':'night',
-  'revealjs_transition':'linear',
+  'revealjs_transition':'default',
   'revealjs_history':'true',
   'revealjs_slideNumber':'true'
 
@@ -115,3 +133,5 @@ asciidoctor {
 
   dependsOn download
 }
+
+defaultTasks 'build', 'asciidoctor'
