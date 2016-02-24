@@ -3,19 +3,23 @@
  */
 package jpa.advanced;
 
-import lombok.Data;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 /**
  * @author cristian
  *
  */
-@Data
+@Getter 
+@Setter
+@ToString(exclude = "person")
 @Entity
 @Table(name = "accounts")
 public class Account {
