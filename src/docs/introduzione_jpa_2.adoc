@@ -170,8 +170,8 @@ Il database ha una sola tabella correlata:
 
 == @Embedded multiple
 
-In caso si voglia avere più istanza di una tipologia `@Embdedd` all'interno di
-una entity occorre rinominarne le colonne (almeno di n-1):
+In caso si voglia avere più istanza di una tipologia `@Embedded` all'interno di
+una entity occorre rinominarne le colonne _(almeno n-1)_
 
 [source,java]
 ----
@@ -195,10 +195,3 @@ public class Person {
 }
 ----
 
-== Struttura per @Embedded multiple
-
-E su la struttura della tabella `person` sarà:
-
-|===
-|id |... |home_street |home_city |home_country |work_street |work_city |work_country
-|===
