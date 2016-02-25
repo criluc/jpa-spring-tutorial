@@ -7,7 +7,37 @@ Marco Andreini <marco.andreini@besmartbeopen.it>
 :revealjs_slideNumber: true
 :sourcedir: ../main/java
 
-== Spring BOOT
+== Spring Framework
+
+Spring è il più popolare application development framework in ambiente Java enterprise.
+Milioni di sviluppatori nel mondo usano Spring.
+È un framework per scrivere codice molto performante, facilmente testabile, particolarmente riutilizzabile.
+
+== Caratteristiche salienti
+
+[%step]
+- È organizzato in modo modulare. Ad esempio:
+** Il modulo Spring Web MVC framework permette di sviluppare applicazioni web integrate.
+** Il modulo Spring JPA permette di collegare il JPA all'applicazione.
+- Permette di creare applicazioni di livello enterprise utilizzando POJO.
+- Ha un sistema di IoC/Dependency Injection integrato.
+
+== Componenti Spring Framework
+
+image::spring-overview.png[Spring Framework]
+
+== Spring Framework: Core container
+
+[%step]
+* Il modulo *core* implementa le parti fondamentali del framework, includendo
+quindi le funzionalità di *Dependency Injection*.
+* Il modulo *bean* implementa il BeanFactory che una sofisticata implementazione
+del _factory pattern_.
+* Il modulo *context* è il mezzo per accedere agli oggetti definiti e configurati.
+* Il modulo *Expression Language* implementa un potente linguaggio per le
+espressioni per la consultazione e la gestione degli oggetti a runtime.
+
+== Spring Boot
 
 Bootable:: si avvia direttamente senza bisogno di un application server a parte,
 avendo integrato un Tomcat o Jetty.
@@ -19,11 +49,56 @@ Integration:: offre integrazioni già pronte con molte funzionalità utili
 
 image::start_spring_io.png[start.spring.io]
 
-== Il progetto Spring BOOT
+== Il progetto in Spring Boot
 
 * Cosa comprende?
 ** la configurazione di minima
 ** il pom (maven) per scaricare le dipendenze e compilare
+
+== Spring MVC
+
+[%step]
+* Il *Model* incapsula i dati dell'applicazione, che in generale sono POJO.
+* La *View* è responsabile dell'interpretazione dei dati del modello e di solito
+genera HTML, che il browser dell'utente può interpretare.
+* Il *Controller* è responsabile di elaborare le richieste utente, costruire
+un Model appropriato e passarlo alla View.
+
+== I controller
+
+[%step]
+* In spring MVC la `DispatcherServlet` delega le richieste ai controller per
+eseguire le funzionalità specifiche.
+* L'annotazione @Controller indica che una particolare classe ha il ruolo di
+controller.
+* L'annotazione @RequestMapping è utilizzata per associare un URL ad una classe
+intera o ad un metodo specifico.
+* L'uso dell'annotazione @RequestMapping a livello di classe indica che tutti i
+metodi in quel controller sono relativi a quel percorso.
+
+  vedi esempio
+
+== Le View
+
+* Spring MVC supporta molte tipologie di sistemi di template e tecnologie di
+presentazione.
+** Tra le queli cono HTML, PDF, Excel, XML, Velocity, JSON,
+Atom/RSS feeds.
+** Ci concentreremo sui template FreeMarker come esempio.
+
+  vedi esempio
+
+== @RequestMapping
+
+* Si può utilizzare l'annotazione `@RequestMapping` per ottenere un accesso
+conveniente a parti selezionate di un URL.
+* Un template URI è una string simile a un URI
+** contiene uno o più nomi di variabili
+** quando sostituiamo il valore di queste variabili, il template in question
+diventa una URI.
+* per esempio, l'URI Template `http://www.example.com/users/{userId}` contiene
+la variabile userId.
+** Assegnando il valore *fred* alla variabile yields `http://www.example.com/users/fred`
 
 == Agenda
 

@@ -377,3 +377,7 @@ entity stesse.
 SELECT e FROM BlogEntry e WHERE e.date >= '2016-01-01' ORDER BY title ASC
 ----
 
+== Architettura Hibernate
+
+image::hibernate_architecture.png[Architettura Hibernate
+]
