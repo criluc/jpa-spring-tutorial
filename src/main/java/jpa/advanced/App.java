@@ -29,12 +29,12 @@ public class App {
     entityManager.getTransaction().commit();
     entityManager.merge(person);
     entityManagerFactory.close();
-    
+
   }
-  
+
   public static void readOneToOne() {
     EntityManagerFactory entityManagerFactory =
-        Persistence.createEntityManagerFactory("dev_unit");
+        Persistence.createEntityManagerFactory("test_unit");
     EntityManager entityManager = entityManagerFactory.createEntityManager();
 
     PersonWithAccount person = entityManager.find(PersonWithAccount.class, 1L);
@@ -44,9 +44,37 @@ public class App {
 //    System.out.println("account =" + account);
     entityManager.close();
     entityManagerFactory.close();
-    
+
   }
+
+  public static void createOrder() {
+    EntityManagerFactory entityManagerFactory =
+        Persistence.createEntityManagerFactory("test_unit");
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+    Order order = new Order();
+    entityManager.persist(order);
+    entityManager.getTransaction().commit();
+    entityManagerFactory.close();
+
+  }
+  public static void readOrder() {
+    EntityManagerFactory entityManagerFactory =
+        Persistence.createEntityManagerFactory("test_unit");
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    Order order = entityManager.find(Order.class, 1L);
+    for (LineItem lineItem : order.getLineItems()) {
+      System.out.println(
+        String.format("Riga %s. %s: %s euro",
+        lineItem.getId(), lineItem.getDescription(),lineItem.getAmount()));
+    }
+    entityManager.close();
+    entityManagerFactory.close();
+  }
+
   public static void main(String[] args) {
-    readOneToOne();
+    //readOneToOne();
+    createOrder();
+    readOrder();
   }
 }
