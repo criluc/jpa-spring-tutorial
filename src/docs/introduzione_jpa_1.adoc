@@ -21,22 +21,25 @@ Ciascuno strato:
 == Architettura a tre livelli
 Le applicazioni web sono spesso strutturate su *three-tier architecture*:
 
-1. livello di presentazione, con la quale si interagisce direttamente con l'utente
-2. livello applicativo (_businness logic_), si occupa della logica di funzionamento
-3. livello dati, si occupa dell'immagazzinamento dei dati su database
+[%step]
+. livello di presentazione, con la quale si interagisce direttamente con l'utente
+. livello applicativo (_businness logic_), si occupa della logica di funzionamento
+. livello dati, si occupa dell'immagazzinamento dei dati su database
 
 == Object Relational Mapping
+
+[%step]
 * L'ORM si occupa di automatizzare il processo di trasformazione dei dati tra
 gli oggetti (istanze di classi) e i database.
 * Perché è utile?
-
 ** semplifica enormemente il lavoro di interfacciamento al database;
 ** evita di dover scrivere le procedure di trasformazione a mano;
 ** ci vogliamo concentrare sulla _logica di funzionamento_ e non sulla
- struttura relazionale del database.
+struttura relazionale del database.
 
 == ORM: altri benefici
 
+[%step]
 - Permette una eventuale sincronizzazione automatica degli oggetti su database
 - È piuttosto indipendente dal tipo di database
 - Astrazione sui metodi di interrogazione
@@ -44,15 +47,12 @@ gli oggetti (istanze di classi) e i database.
 
 == Java Persistence API
 
-JPA è una specifica java (_JSR_) per *accedere*, *memorizzare* e *gestire* dati di
+* JPA è una specifica java (_JSR_) per *accedere*, *memorizzare* e *gestire* dati di
 oggetti Java specifici e database relazionali.
-
-È confinato nel package `javax.persistence` e non fa parte della dotazione
+* È confinato nel package `javax.persistence` e non fa parte della dotazione
 standard JavaSE.
-
-È considerato l'_ORM_ standard in ambiente Java.
-
-  È stato inizialmente definito nella specifica EJB3.0.
+* È considerato l'_ORM_ standard in ambiente Java.
+* È stato inizialmente definito nella specifica EJB3.0.
 
 == Hibernate come JPA
 Hibernate è un ORM che implementa la specifica JPA.
@@ -60,28 +60,28 @@ Hibernate è un ORM che implementa la specifica JPA.
 - Esistono diverse specifiche JPA (1.0, 2.0, 2.1…)
 - Queste specifiche sono implementate in Hibernate in varie versioni.
 - Noi utilizzeremo come riferimento la specifica JPA 2.0, che è implementata
-  in Hibernate a partire dalla 4.0.
+  in Hibernate a partire dalla 4.0
 
 == Una entity
 [source,java]
 ----
-@Entity // genererà una TABLE di nome blog_entry
+@Entity                             // <1>
 public class BlogEntry {
-
-  @Id @GeneratedValue // genera una INT PRIMARY KEY autoincrementale di nome id
+  @Id @GeneratedValue               // <2>
   private Integer id;
-
-  @Column(nullable=false) // genererà un campo title di tipo VARCHAR NOT NULL
+  @Column(nullable=false)           // <3>
   private String title;
-
-  private String summary; // semplici VARCHAR
-
-  private String body;
-
-  @Temporal(TemporalType.TIMESTAMP) // genererà un campo date di tipo 'TIMESTAMP'
+  private String summary;           // <4>
+  private String body;              // <4>
+  @Temporal(TemporalType.TIMESTAMP) // <5>
   private Date date;
 }
 ----
+<1> indica che l'entity si riferisce a una TABLE di nome blog_entry
+<2> si riferisce alla colonna `id`, chiave primaria autoincrementale
+<3> si riferisce alla colonna `title`, di tipo VARCHAR NOT NULL
+<4> si riferiscono a colonne di tipo VARCHAR
+<5> si riferisce alla colonna `date` di tipo 'TIMESTAMP'
 
 == JPA e POJO
 Si utilizzano oggetti di tipo POJO (Plain Old Java Object) e
@@ -94,33 +94,73 @@ la persistenza riguarda:
 
 == Annotazioni JPA
 
-Le caratteristiche degli oggetti coinvolti - prevalentemente entity - sono
+[%step]
+* Le caratteristiche degli oggetti coinvolti - prevalentemente entity - sono
 definite da annotazioni specifiche.
-
-Queste annotazioni indicano quale comportamento deve avere il JPA (ciò che
+* Queste annotazioni indicano quale comportamento deve avere il JPA (ciò che
 implementa la specifica JPA, per esempio Hibernate).
+** In precedenza si utilizzavano file di mappatura entity-table inseriti
+in appositi file XML (.hbm.xml per Hibernate).
 
- In precedenza si utilizzavano metadati inseriti appositi file XML, separati
- dal codice Java.
+== Mappatura automatica
 
-  Si trovano ancora `XML` di Hibernate su software un po' datati.
+In JPA è possibile utilizzare l'associazione automatica tra istanze in java e
+tabelle in funzione delle annotazioni presenti sulle entity.
+
+* l'associazione viene effettuata all'avvio del sistema JPA
+* tipicamente viene effettuato il *classpath scan* (ricerca nelle classi java)
+* è anche possibile indicare esplicitamente quali siano le classi da persistere
 
 == @Entity
-Le entity in JPA sono gli oggetti persistenti.
-
-Per esempio i dati degli articoli di un blog possono essere riassunti una
-apposita entity, annotata appositamente con `@Entity`:
 [source,java]
 ----
-include::{sourcedir}/jpa/introduction/BlogEntry.java[lines=12..28]
+@Entity                             // <1>
+public class BlogEntry {
+  @Id @GeneratedValue               // <2>
+  private Integer id;
+  @Column(nullable=false)           // <3>
+  private String title;
+  private String summary;           // <4>
+  private String body;              // <4>
+  @Temporal(TemporalType.TIMESTAMP) // <5>
+  private Date date;
+}
+----
+<1> indica che l'entity si riferisce a una TABLE di nome blog_entry
+<2> si riferisce alla colonna `id`, chiave primaria autoincrementale
+<3> si riferisce alla colonna `title`, di tipo VARCHAR NOT NULL
+<4> si riferiscono a colonne di tipo VARCHAR
+<5> si riferisce alla colonna `date` di tipo 'TIMESTAMP'
+
+== Persistence Unit
+
+[%step]
+* è definito dall'insieme di classi gestite da un'istanza dell'EntityManager.
+* definisce la corrispondaza di un insieme di classi di entity con un database
+relazionale
+* effettua la serializzazione e deserializzazione controllate verso/dal database
+relazionale
+
+== Persistence Unit^(2)^
+
+* è definito per mezzo del framework che implementa la specifica JPA
+* tipicamente si definiscono le *Persistence Unit* nel filel
+`META-INF/persistence.xml`:
+----
+include::{sourcedir}/META-INF/persistence.xml[lines=1..12]
 ----
 
-== @Id
-Occorre annotare con `@Id` il campo che identifica la chiave primaria:
+== Persistence Context
+* è l'insieme delle istanze di entity in un certo insieme di dati
+* conosce lo stato delle istanze di entity rispetto al database (`detached`, `managed`,...)
 
+== @Id
+Occorre annotare con `@Id` il campo che identifica la chiave primaria
+
+[%step]
 - Solitamente è di tipo numerico o stringa
 - Ci deve essere un solo campo annotato con `@Id` per entity.
-- Visto che le entity sono confrontate tramite il metodo equals, occorre che
+- Visto che le entity sono confrontate tramite il metodo `equals`, occorre che
   si utilizzi in questi confronti il campo annotato con `@Id`.
 
 == Chiavi primarie
@@ -137,42 +177,59 @@ include::{sourcedir}/jpa/introduction/BlogEntry.java[lines=15..18]
 
 == @Column
 
-L'annotazione `@Column` può essere utilizzata su tutti i campi dell'oggetto per:
+L'annotazione `@Column` può essere utilizzata su tutti i campi che corrispondono
+ad una colonna per:
 
 * indicare il nome della colonna corrispondente (con `name=...`), che
 altrimenti sarà il nome del campo (opportunamente traslato)
 * indicare se il campo può assumere i valori `null` (_default_) o meno (con `nullable=false`)
 * indicare se la colonna corrispondente deve avere una chiave univoca (con `unique=true`)
-* Usati da usare in casi specifici, più di rado: columnDefinition, length, insertable, updatable, ...
+
+Altri attributi usati più di rado: columnDefinition, length, insertable, updatable, ...
+
+== Schema
+
+* In Hibernate - ma anche con altri framework JPA - è possibile
+** definire come far interagire il database in fase di creazione
+del Persistence Context.
+** si possono verificare/creare/distruggere le tabelle in automatico
+** è comunque un comportamento opzionale
+** ciò permette di scegliere in funzione della fase progettuale il comportamento
+più indicato
+
+== Schema^(2)^
+
+Più nel dettaglio in Hibernate si può utilizzare uno di questi valori:
+
+validate:: valida lo schema (utile in fase di produzione o pre-produzione)
+update:: modifica se necessario lo schema (utile a volte in sviluppo)
+create:: crea le tabelle mancanti nello schema (utile per i test)
+create-drop:: distrugge le tabelle coinvolte e le ricrea (utile per i test)
+
+== Differenze tra attributi delle annotazioni
+
+* Gli attributi delle annotazioni del package `javax.persistence` hanno effetti
+differenti sull'ORM
+* alcune annotazioni/attributi come ad esempio il `@Column(name="mycolumn")` indicano
+** in fase di creazione della tabella che il nome della colonna sarà `mycolumn`
+** durante le `SELECT/INSERT/UPDATE` il campo sarà associato alla colonna `mycolumn`
+
+== Differenze tra attributi della annotazioni^(2)^
+
+* Altri attributi/annotazioni sono maggiormente di struttura
+* ad esempio `@Column(nullable=false)` indica
+** in fase di creazione della tabella che la colonna in questione dovrà essere `NOT NULL`
+** durante le `SELECT/INSERT/UPDATE` non ha praticamente effetti
 
 == @Table
-Con `@Table` si possono annotare le entity con informazioni aggiuntive, permettendo di indicare:
+Con `@Table` si possono annotare le entity con informazioni aggiuntive, che indicano:
 
+[%step]
 * il nome della tabella (altrimenti è quello dell'entity)
 * il nome del catalogo
 * il nome dello schema
 * eventuali vincoli di univocità (uniqueConstraints)
 * eventuali indici (indexes)
-
-== Persistence Unit
-
-* è definito dall'insieme di classi gestite da un'istanza dell'EntityManager.
-* definisce la corrispondaza di un insieme di classi di entity con un database
-relazionale
-* effettua la serializzazione e deserializzazione controllate verso/dal database
-relazionale
-
-== Persistence Unit^(2)^
-* è definito per mezzo del framework che implementa la specifica JPA
-* tipicamente si definiscono le *Persistence Unit* nel filel
-`META-INF/persistence.xml`:
-----
-include::{sourcedir}/META-INF/persistence.xml[]
-----
-
-== Persistence Context
-* è l'insieme delle istanze di entity in un certo insieme di dati
-* conosce lo stato (`detached`, `managed`,...) delle istanze di entity correlate
 
 == EntityManager
 
@@ -180,11 +237,13 @@ include::{sourcedir}/META-INF/persistence.xml[]
 * permette di interagire col _Persistence Context_
 * ha una API per gestire le istanze delle entity, interagendo col loro stato
 * permette di caricare, salvare, cercare... le istanze delle entity
+
+== Come ottenere l'EntityManager
+
 * In modo dipendente dal framework in uso l'entityManager è:
 ** Injected dal framework in automatico (es. @PersistenceContext)
 ** Creato a partire dall'EntityManagerFactory, creato e configurato una sola
 volta all'avvio dell'applicazione.
-
 
 == Operazioni di base sulle entity
 [%step]
@@ -194,24 +253,23 @@ volta all'avvio dell'applicazione.
 
 == EntityManager::persist
 
-gli oggetti annotati come entità sono regolari oggetti java fino a quando non
+Le entità sono regolari oggetti java fino a quando non
 vengono resi persistenti dall'EntityManager
 [source,java]
 ----
- entityManager.persist(myBlogEntry);
+public void doThings() {
+ // ...
+ entityManager.persist(myBlogEntry); // <1>
+
 ----
-* il metodo persist(entityObject) rende persistente l'entità nel database
-(esegue la `INSERT` SQL)
+<1> rende persistente l'entità `myBlogEntry` nel database (cioè esegue la `INSERT` SQL)
 
 == EntityManager::persist^(2)^
 
-* nella chiamata alla `persist` viene verificato che non ci siano oggetti
-con lo stesso *id* nel database, e nel caso viene sollevata una runtime
-exception: `EntityExistsException`
-
-* se l'oggetto non è trovato questo metodo restituisce un'eccezione `EntityNotFFoundException`
-* l'istanza è prelevata in modo lazy (non si prelavano i valori delle proprietà dal database)
-* lo stato dell'entità (title, excerpt, body...) sono prelevati la prima volta che si accede all'oggetto
+* nella chiamata alla `persist` è verificato che non ci siano oggetti con lo
+stesso *id* nel database
+* nel caso viene sollevata una runtime exception: `EntityExistsException`
+* dopo la chiamata alla `persist` l'istanza è gestita dal `PersistenceContext` (managed)
 
 == Esempio di persist
 [source,java]
@@ -225,6 +283,7 @@ exception: `EntityExistsException`
 ----
 
 [options="header"]
+.blog_entry
 |===
 |id |title |excerpt |body |date
 
@@ -239,26 +298,42 @@ exception: `EntityExistsException`
 
 == EntityManager::find
 
-il metodo find è utilizzabile per interrogare gli entity object
+Il metodo `find` è utilizzabile per interrogare gli entity object
 [source,java]
 ----
- BlogEntry entry = entityManager.find(BlogEntry.class, myBlogId);
+public void loadBlogEntry() {
+ // ...
+ BlogEntry entry = entityManager.find(BlogEntry.class, myBlogId); // <1>
 ----
-* il metodo find() accetta due paremetri
+<1> Carica dal database l'entity di tipo BlogEntry con `id` corrispondente a `myBlogId` (cioè effettua una SELECT)
+
+== EntityManager::find^(2)^
+
+* il metodo `find` accetta due paremetri
 ** la classe dell'entity
 ** il valore della chiave primaria
 * se non ci sono risultati per la ricerca con la chiave indicata, l'operazione restituisce `null`.
-* se invece ci sono l'oggetto restituito dall'EntityManager diventa direttamente utilizzabile in Java
+* se invece ci sono, l'oggetto restituito dall'EntityManager diventa direttamente utilizzabile in Java
+** lo stato di questa istanza sarà `managed`
 
 == EntityManager::remove
 
-si usa per cancellare una istanza della entità (quindi una riga) dal database:
+Si usa per cancellare una istanza di entity (quindi una riga) dal database:
 [source,java]
 ----
- entityManager.remove(myBlogEntry);
+public void doThings() {
+ // ...
+ entityManager.remove(myBlogEntry); // <1>
 ----
-* l'entityObject passato deve essere gestito dall'entityManager pena il fallimento della rimozione
-* l'operazione di cancellazione dal db può avvenire successivamente (dopo la `EntityManager::flush()`)
+<1> Cancella dal database l'istanza `myBlogEntry`, cioè esegue una DELETE
+
+== EntityManager::remove^(2)^
+
+* la `remove` accetta un solo parametro entity
+* l'entityObject fornito come parametro deve essere gestito dall'entityManager
+** pena il fallimento della rimozione
+* l'operazione di cancellazione dal db può avvenire successivamente
+** dopo la `EntityManager::flush()` o comunque la chiusura della transazione
 * dopo la chiamata, l'entity diventerà "detached" dal entityManager e non più gestita
 ** cioè sono interrotti gli automatismi di aggiornamento e di caricamento dei dati verso il db.
 
@@ -268,6 +343,7 @@ image::entity_lifecycle.jpg[Entity Lifecycle]
 
 == Entity lifecycle^(2)^
 
+[%step]
 * le entity che sono nello stato di managed/persistent possono essere modificati
 dall'applicazione
 * qualsiasi modifica a queste entity è *automaticamente identificata e

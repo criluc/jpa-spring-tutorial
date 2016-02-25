@@ -21,7 +21,6 @@ persistita* al momento in cui sarà effettuata la `flush` del _Pesistence Contex
 rendere queste modifiche persisitenti
 * ci possono comunque essere altre modalità di gestire le transazioni.
 
-
 == Altre operazioni su EntityManager
 
 In funzione del lifecycle appena visto introduciamo gli ulteriori metodi:

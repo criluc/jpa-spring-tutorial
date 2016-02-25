@@ -1,13 +1,13 @@
 = Generatore di slide via asciidoc + revealjs
 
-Viene utilizzato asciidoctor con tempalte revealjs per creare le presentazioni
+Viene utilizzato asciidoctor con template revealjs per creare le presentazioni
 web.
 
 == Auto ri-compilazione via gradle
 
 ./gradlew asciidoctor -t
 
-= Setup di asciidoctor
+== Setup di asciidoctor
 
 In shell:
  gem install --user-install asciidoctor tilt thread_safe slim
@@ -18,9 +18,16 @@ In questo progetto (o simile):
  curl -L https://github.com/hakimel/reveal.js/archive/3.2.0.tar.gz | tar xzf -
  mv reveal.js{-3.2.0,}
 
-== Per compilare
+=== Per compilare
 
  asciidoctor -T ~/git/asciidoctor-reveal.js/templates/slim jpa-tutorial.txt
+
+=== Auto compilazione via guard
+
+Auto ricompila su ogni modifica dei file .adoc il corrispondente .html:
+
+ gem install guard guard-shell
+ guard start
 
 == Setup emacs
 
@@ -40,10 +47,3 @@ In emacs:
 
 E nel buffer specifico poi (jpa-tutorial.txt):
  M-x adoc-mode
-
-=== Auto compilazione via guard
-
-Auto ricompila su ogni modifica dei file .adoc il corrispondente .html:
-
- gem install guard guard-shell
- guard start

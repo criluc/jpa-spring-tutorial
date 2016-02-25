@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.*
-
 buildscript {
   repositories {
     jcenter()
@@ -72,17 +70,8 @@ task download << {
     cp "http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js",
     highlightjs, recursive:true, overwrite:true
   }
-
-  // replace highlight.js with newer version ...
   copy {
-    from "${revealjsDir}/plugin/highlight/highlight.js"
-    into temporaryDir
-    filter(HeadFilter, lines:26)
-    filter(ConcatFilter, append:highlightjs)
-  }
-  // ... and place it on the original path.
-  copy {
-    from "${temporaryDir}/highlight.js"
+    from highlightjs
     into "${revealjsDir}/plugin/highlight"
   }
 }
