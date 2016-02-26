@@ -94,11 +94,11 @@ Atom/RSS feeds.
 conveniente a parti selezionate di un URL.
 * Un template URI è una string simile a un URI
 ** contiene uno o più nomi di variabili
-** quando sostituiamo il valore di queste variabili, il template in question
+** quando sostituiamo il valore di queste variabili, il template in questione
 diventa una URI.
 * per esempio, l'URI Template `http://www.example.com/users/{userId}` contiene
 la variabile userId.
-** Assegnando il valore *fred* alla variabile yields `http://www.example.com/users/fred`
+** Assegneremo il valore *fred* alla variabile userId andando su `http://www.example.com/users/fred`
 
 == Agenda
 
