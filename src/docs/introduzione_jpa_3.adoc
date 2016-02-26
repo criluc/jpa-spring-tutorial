@@ -193,7 +193,7 @@ public class Person {
 == Relazioni uno a molti
 
 * un'entità può essere associata a più di un oggetto dello stesso tipo
-* la relazione viene detta di  tipo uno a molti.
+* la relazione viene detta di tipo uno a molti.
 * analogamente alle relazioni uno ad uno può essere uni o bidirezionale
 
 In questo caso le annotazioni utilizzate sono:
@@ -285,6 +285,216 @@ order.getLineItems().add(lineItem); // Non viene modificato il db
 LineItem li = entityManager.find(LineItem.class, 1L);
 li.setOrder(order); // viene aggiornato il db
 ----
+
+== Relazioni molti a molti
+
+* molte entità possono essere associate a molte altre entità dello stesso tipo
+* la relazione viene detta di tipo molti a molti
+* analogamente alle relazioni _one-to-one e_ e _uno-to-many_ può essere uni o bidirezionale
+* l'annotazione utilizzata è *javax.persistence.ManyToMany*
+* nelle _many-to-many_ l'_owning_side_ può essere a scelta su uno qualunque dei lati della relazione
+
+== Relazioni molti a molti^(2)^
+
+[source,java]
+----
+@Entity @Table(name = "persons")
+public class Person {
+  @ManyToMany(mappedBy = "owners")
+  private List<House> houses = new ArrayList();
+}
+@Entity @Table(name = "houses")
+public class House {
+  @ManyToMany
+  private List<Person> owner = new ArrayList();
+}
+----
+
+* una persona può avere molte case
+* una casa può avere più proprietari
+
+== @JoinTable
+
+* specifica la tabella di mapping dell'associazione.
+* è applicata al _owning side_ dell'associazione
+* di solito è utilizzata nelle _many-to-many_ e _one-to-many_ unidirezionali
+* se non è presente il nome della _join table_ è la concatenazione dei nomi delle tabelle in relazione tra di loro, separati da _ (underscore) e con l'_owning size_ prima
+
+[source,java]
+----
+@ManyToMany
+@JoinTable(name = "persons_houses")  
+private List<Person> owner = new ArrayList();
+----
+
+== @JoinTable: joinColumns, inverseJoinColumns
+
+[source,java]
+----
+@ManyToMany
+@JoinTable(name = "persons_houses",
+   joinColumns=  @JoinColumn(name="house_id"), <1>
+   inverseJoinColumns= @JoinColumn(name="person_id") <2>
+   )
+private List<PersonWithAccount> owners = Lists.newArrayList();
+----
+
+<1> colonna del db relativa alla _owning_side_ dlela relazione
+<2> colonna del db relativa alla _inverse_side_ della relazione
+
+
+== Ordine di salvataggio degli oggetti dipendenti
+
+[source,java]
+----
+//...
+entityManager.getTransaction().begin();
+Order order = new Order();
+LineItem lineItem = new LineItem();
+lineItem.setOrder(order);
+entityManager.persist(lineItem); <1>
+entityManager.persist(order);
+entityManager.getTransaction().commit();
+----
+
+<1> In questo punto l'order non è ancora salvato (non ha un id associabile in _order_line_items_)
+
+--
+WARN: HHH000437: Attempting to save one or more entities that have a non-nullable association with an unsaved transient entity. The unsaved transient entity must be saved in an operation prior to saving these dependent entities.
+--
+
+== Cascade e Relazioni
+
+.Table Operazioni in cascata per le Entity
+
+* quando un'operazione è effettuata su un'entity si può scatenare la stessa operazione sulle entità collegate
+
+[cols="1,4", options="header"]
+|===
+| Cascade Operation | Descrizione
+
+| PERSIST
+| quando l'oggetto è _persisted_, anche l'entità collegata è _persisted_
+
+| DETACH
+| quando l'oggetto è _detached_, anche l'entità collegata è _detached_
+
+| MERGE
+| quando l'oggetto è _merged_, anche l'entità collegata è _merged_
+
+|===
+
+== Cascade e Relazioni
+
+.Table Operazioni in cascata per le Entity^(cont)^
+
+[cols="1,4", options="header"]
+|===
+| Cascade Operation | Descrizione
+
+| REFRESH
+| quando viene effettuta la _refresh_ dell'oggetto anche l'entità collegata viene ricaricata
+
+| REMOVE
+| quando viene rimosso l'oggetto anche l'entità collegata viene rimosa
+
+| ALL
+| tutte le operazioni sono applicate agli oggetti correlati. Equivalente a cascade={DETACH, MERGE, PERSIST, REFRESH, REMOVE}
+
+|===
+
+== cascade = CascadeType.*
+
+* Valido per tutte le relazioni @OneToOne, @OneToMany, @ManyToOne, ..
+
+[source,java]
+----
+import javax.persistence.CascadeType;
+//...
+public class Order {
+//...
+  @OneToMany(mappedBy = "order", cascade = { CascadeType.PERSIST, CascadeType.REMOVE)
+  private List<LineItem> lineItems = new ArrayList<>();
+----
+
+
+== Esempio di CascadeType.Persist
+
+[source,java]
+----
+public class Order {
+  //..
+  @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST)
+  private List<LineItem> lineItems = new ArrayList<>();
+}
+
+//...
+// utilizzo del Cascade
+Order order = new Order();
+LineItem lineItem = new LineItem();
+lineItem.setOrder(order);
+order.getLineItems().add(lineItem);
+entityManager.persist(order);
+----
+
+L'oggetto LineItem viene salvato per effetto del +
+cascade = CascadeType.PERSIST
+
+
+== Esempio di CascadeType.REMOVE
+
+[source,java]
+----
+public class Order {
+  //..
+  @OneToMany(mappedBy = "order", cascade = { CascadeType.PERSIST, CascadeType.REMOVE )
+  private List<LineItem> lineItems = new ArrayList<>();
+}
+
+//...
+// utilizzo del Cascade
+Order order = entityManager.find(Order.class, 1L);
+entityManager.remove(order);
+----
+
+[source,sql]
+----
+Hibernate:
+    select * from orders where id = 1
+Hibernate:
+    select * from order_line_items where order_id = 1
+Hibernate: 
+    delete from order_line_items where id = 1
+Hibernate: 
+    delete from orders where id = 1
+----
+
+
+== Orphan Removal
+
+* nelle relazioni _one-to-one_ e _one-to-many_ quando un oggetto viene rimosso da una relazione è probabile che debba essere rimosso
+* questi oggetti sono considerati *orphans* e possono essere rimossi automaticamente utilizzando l'attributo _orphanRemoval_
+* per esempio se un Order ha molti LineItem ed un LineItem viene rimosso dall'associazione, la LineItem è considerata un _orphan_
+* se orphanRemoval è true, la LineItem sarà cancellata quando è rimossa l'associazione dall'ordine
+
+* l'attributo *orphanRemoval* in @OneToMany e @OneToOne accettata true/false ed il default è false
+
+
+== Esempio di Orphan Removal^(2)^
+
+[source,java]
+----
+public class Order {
+  @OneToMany(mappedBy = "order", orphanRemoval = true)
+  public List<LineItems> getLineItems() { ... }
+}
+// Esempio di utilizzo
+Order order = entityManager.getReference(Order.class, 11L)
+order.getLineItems().clear(); <1>
+----
+
+<1> La lista viene svuotata, gli oggetti LineItem diventano _orphan_ e vengono cancellati
+
 
 == @NamedQuery
 

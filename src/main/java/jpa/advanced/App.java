@@ -72,9 +72,63 @@ public class App {
     entityManagerFactory.close();
   }
 
+  public static void unsavedTransientObject() {
+    EntityManagerFactory entityManagerFactory =
+        Persistence.createEntityManagerFactory("test_unit");
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+    Order order = new Order();
+    LineItem lineItem = new LineItem();
+    lineItem.setOrder(order);
+    entityManager.persist(lineItem);
+    entityManager.persist(order);
+    entityManager.getTransaction().commit();
+    entityManagerFactory.close();
+  }
+
+  public static void cascadePersist() {
+    EntityManagerFactory entityManagerFactory =
+        Persistence.createEntityManagerFactory("dev_unit");
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+    Order order = new Order();
+    LineItem lineItem = new LineItem();
+    lineItem.setOrder(order);
+    order.getLineItems().add(lineItem);
+    entityManager.persist(order);
+    entityManager.getTransaction().commit();
+    entityManagerFactory.close();
+  }
+
+  public static void cascadeDelete() {
+    EntityManagerFactory entityManagerFactory =
+        Persistence.createEntityManagerFactory("dev_unit");
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+    Order order = entityManager.getReference(Order.class, 10L);
+    entityManager.remove(order);
+    entityManager.getTransaction().commit();
+    entityManagerFactory.close();
+  }
+
+  public static void orphanRemoval() {
+    EntityManagerFactory entityManagerFactory =
+        Persistence.createEntityManagerFactory("dev_unit");
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+    Order order = entityManager.getReference(Order.class, 11L);
+    order.getLineItems().clear();
+    entityManager.getTransaction().commit();
+    entityManagerFactory.close();
+  }
+
   public static void main(String[] args) {
     //readOneToOne();
-    createOrder();
-    readOrder();
+    //createOrder();
+    //readOrder();
+    //unsavedTransientObject(
+    //cascadePersist();
+    //cascadeDelete();
+    orphanRemoval();
   }
 }
