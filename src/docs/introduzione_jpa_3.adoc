@@ -556,6 +556,257 @@ public List<Person> byName(String firstname) {
 }
 ----
 
+== Positional Parameter
+
+* parametri individuati con il punto interrogativo (?) seguiti da un numero
+* sono sostituiti nella query eseguita tramite il metodo
+** `javax.persistence.Query.Query.setParameter(integer position, Object value)`
+
+[source,java]
+----
+@PersistenceContext
+EntityManager entityManager;
+
+public List<Person> byName(String firstname) {
+  return entityManager
+      .createQuery(
+          "SELECT p FROM Person p WHERE p.firstname = ?1",
+          Person.class)
+     .setParameter(1, firstname)
+     .getResultList();
+}
+----
+
+== SELECT statement
+
+* una select query ha sei elementi
+** SELECT, FROM, WHERE, GROUP BY, HAVING e ORDER BY
+* le clausole SELECT e FROM sono obbligatorie
+* WHERE, GROUP BY, HAVING, and ORDER sono opzionali
+
+[source,bnf]
+----
+QL_statement ::= select_clause from_clause 
+  [where_clause][groupby_clause][having_clause][orderby_clause]
+----
+
+== SELECT e WHERE
+
+* SELECT definisce il tipo di oggetto o valore restituto
+* FROM definisce il contesto della query dichiarando uno o più variabili referenziabili nella parte SELECT e WHERE, può contenere
+** il nome astratto di un'entità 
+** una collezione riferita in un'entity
+** un elemento single-valued di una relazione
+* WHERE è un'espressione condizionale che restringe gli oggetti restituiti dalla query
+
+== GROUP BY, HAVING, ORDER BY
+
+* GROUP BY ragrruppa i risutalti della query in accordo ad un insieme di proprietà
+* HAVING è utilizzata con la GROUP BY per restringere i risultati in accordo a delle espressioni condizionali
+* definisce l'ordinamento dei risultati 
+
+== Basic Example SELECT
+
+[source,java]
+----
+SELECT p FROM Player p
+----
+
+dati restituiti:: tutti i giocatori
+descrizione:: la clausola FROM dichiara un variabile identificativa chiamata *p*, omettendo la keyword opzionale *AS*
+Player::
+è l'abstract schema name dell'entity Player `@Entity class Player {...}`
+
+
+== Eliminare i duplicati
+
+[source,java]
+----
+SELECT DISTINCT p FROM Player p
+  WHERE p.position = :position AND p.name = :name
+----
+
+dati restituti:: i giocatori con una determinata posizione e nome
+descrizione::
+* position e name sono campi persistenti dell'entità Player.
+* nella WHERE si compare il valore dei campi nel db con quelli passati per parametro.
+* *DISTINCT" elimina eventuali duplicati
+
+
+== Navigare le relazioni
+
+* in JPQL un'espressione può attraversare o navigare le entità correlate tra di loro
+* questa funzionalità è la differenza principale tra JPQL e SQL
+* la nagivazione tra le entità correlate è molto semplificata rispetto all'SQL perché sfrutta la descrizione delle entity e delle sue relazioni
+
+== Simple Query con relazioni
+
+[source]
+----
+SELECT DISTINCT p
+  FROM Player p JOIN p.teams t
+----
+
+dati restituiti:: tutti i giocatori che appartengono almeno ad una squadra
+
+descrizione::
+* *p* rappresenta l'entità _Player_, *t* l'entità _Team_ correlata a p. 
+* *p.teams* naviga da un Player ai suoi Team correlati. 
+* il punto (.)  nell'espressione  *p.teams* è l'operatore di navigazione
+
+
+== Simple Query con relazioni^(2)^
+
+[source]
+----
+SELECT DISTINCT p
+  FROM Player p JOIN p.teams t
+----
+
+è equivalente a
+
+[source]
+----
+SELECT DISTINCT p
+  FROM Player p
+  WHERE p.team IS NOT EMPTY
+----
+
+ed a 
+
+[source]
+----
+SELECT DISTINCT p
+  FROM Player p, IN (p.teams) t
+----
+
+== Attraversare le relazioni
+
+[source]
+----
+SELECT DISTINCT p
+  FROM Player p JOIN p.teams
+  WHERE t.city = :city
+----
+
+dati restituiti:: tutti i giocatori che appartengono ad una squadra di una determinata città
+
+ATTENZIONE: nelle WHERE non si possono navigare le collezioni, non si può scrivere WHERE t.teams.city = :city (illegal expression)
+
+== Navigazione basata su campi correlati
+
+[source]
+----
+SELECT DISTINCT p
+  FROM Player p JOIN p.teams t
+  WHERE t.league.sport = :sport
+----
+
+* dato che *league* non è una collezione ma relazione *league* può essere seguita per arrivare al campo *sport* collegato
+
+== Altre espressioni condizionali
+
+[source]
+.Like Expression
+----
+SELECT p FROM Player p
+  WHERE p.name LIKE 'Mich%'
+----
+
+[source]
+.Null Expression
+----
+SELECT t FROM Team t
+  WHERE t.league IS NULL
+----
+
+[source]
+.IS Empty Expression
+----
+SELECT p FROM Player p
+  WHERE p.teams IS EMPTY
+----
+
+== Altre espres. condizionali^(2)^
+
+[source]
+.BETWEEN Expression
+----
+SELECT DISTINCT p FROM Player p
+  WHERE p.salary BETWEEN :lowerSalary AND :higherSalary
+----
+
+[source]
+.Operatori di comparazione
+----
+SELECT DISTINCT p1
+  FROM Player p1, Player p2
+  WHERE p1.salary > p2.salary AND p2.name = :name
+----
+
+== Uguaglianza nelle condizioni
+
+[source,java]
+----
+public List<Person> havingHouse(House house) {
+  return entityManager.createQuery(
+      "SELECT p FROM Person JOIN p.houses h"
+      + " WHERE h = :house", Person.class)
+  .setParameter("house", house)
+  .getResultList();
+}
+----
+
+h = h:house::
+Compara gli oggetti di tipo House relazionati a Person con l'oggetto House passato per parametro
+
+Semantica dell'uguaglianza per le Entity::
+Due entity dello stesso _abstract schema type_ sono considerate uguali se e solo se le loro chiavi primarie hanno lo stesso valore
+
+== ORDER BY
+
+[source]
+----
+SELECT o
+  FROM Customer c JOIN c.orders o JOIN c.address a
+  WHERE a.state = 'CA'
+  ORDER BY o.quantity, o.totalcost
+----
+
+
+== GROUP BY e HAVING
+
+[source]
+----
+SELECT c.status, AVG(o.totalPrice)
+  FROM CustomerOrder o JOIN o.customer c
+  GROUP BY c.status HAVING c.status IN (1, 2, 3)
+----
+
+== ALTRE FUNZIONI JPQL
+
+* Stringhe: CONCAT, LENGTH, SUBSTRING, TRIM, LOWER, UPPER
+* Aritmetiche: ABS, MOD, SQRT, SIZE
+* Date/Time: CURRENT_DATE, CURRENT_TIME, CURRENT_TIMESTAMP
+* Subquery: simili alle subquery SQL
+* Case Expressio: CASE TYPE(p) WHEN...
+* ....
+
+Full Query Language Syntax::
+https://docs.oracle.com/javaee/7/tutorial/persistence-querylanguage005.htm
+
+== UPDATE e DELETE
+
+Gli statemente *Update* e *delete* fornisco operazioni su un insieme di entity.
+
+[source,bnf]
+----
+update_statement :: = update_clause [where_clause] 
+delete_statement :: = delete_clause [where_clause]
+----
+[source]
+
+
 == @NamedQuery
 
 * Si possono definire query statiche con nome
