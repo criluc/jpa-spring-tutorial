@@ -495,6 +495,66 @@ order.getLineItems().clear(); <1>
 
 <1> La lista viene svuotata, gli oggetti LineItem diventano _orphan_ e vengono cancellati
 
+== Quering Entities
+
+JPA fornisce due metodi per interrogare le Entity
+
+* Java Persistence query language (JPQL)
+** linguaggio semplice basasto su stringhe e simile a SQL
+* Criteria API
+** un API Java utlizzata per creare query typesafe
+
+== Java Persistence query language
+
+* JPQL definisce le query per interrogare le Entity ed il loro stato di persistenza
+* le query sono portabili ed indipendenti dal data store (db)
+* il linguaggio utilizza le Entity e le loro relazioni come modello di astrazione del database
+** le operazioni e le espressioni sono basate sul modello astratto
+* lo _scope_ delle query comprende le Entity gestite dalla stessa Persistent Unit
+
+[source,sql]
+----
+SELECT a FROM Article a ORDER BY a.date ASC
+----
+
+== Creazione delle Query con JPQL
+
+EntityManager::createQuery permette di creare query dinamiche definite direttamente nella business logic dell'applicazione
+
+[source,java]
+----
+@PersistenceContext
+EntityManager entityManager;
+
+public List<Person> list(int maxResults) {
+  return entityManager
+      .createQuery(
+          "SELECT p FROM Person p", Person.class)
+     .setMaxResults(maxResults)          
+     .getResultList();
+}
+----
+
+== Named Parameter
+
+* sono parametri della query prefissati con due punti (:).
+* sono sostituiti nella query eseguita tramite il metodo
+** `javax.persistence.Query.setParameter(String name, Object value)`
+
+[source,java]
+----
+@PersistenceContext
+EntityManager entityManager;
+
+public List<Person> byName(String firstname) {
+  return entityManager
+      .createQuery(
+          "SELECT p FROM Person p WHERE p.firstname = :firstname",
+          Person.class)
+     .setParameter("firstname", firstname)
+     .getResultList();
+}
+----
 
 == @NamedQuery
 
@@ -537,6 +597,34 @@ TypedQuery<BlogEntry> typedQuery = entityManager.createQuery(criteriaQuery);
 typedQuery.setParameter(parameter, "il mio titolo");
 typedQuery.getSingleResult(); // recupera il blogentry con "il mio titolo"
 ----
+
+== JPQL vs Criteria Query
+
+* Vantaggi JPQL
+** le query JPQL sono poche righe, coincise e più leggibili
+** gli sviluppatori già familiari con SQL le imparano velocemente
+** le JPQL NamedQuery possono essere definite e riutilizzate facilmente
+
+== JPQL vs Criteria Query^(2)^
+* Svantaggi JPQL
+** JPQL query non sono typesafe
+** richiedono un cast quando si leggono i risultati dall'entityManager
+** sono sottoposte a problemi di type-casting non intercettabili a compile time
+** in caso di refactoring delle Entity non c'è nessun controllo sulle stringhe JPQL utilizzate
+
+== JPQL vs Criteria Query^(3)^
+
+* Vantaggi Criteria Query
+** permettono di definire le query a livello applicativo con oggetti riutlizzabili
+** hanno migliori performance perché non necessitano il parsing della query (String) ogni volta
+** sono typesafe e non richiedono type casting
+** sono un API Java e non richiedono di imparare un nuovo linguaggio
+** in caso di rifattorizzazione le query sono parzialmente rifattorizzate automaticamente
+
+== JPQL vs Criteria Query^(4)^
+* Svantaggi di Criteria Query
+** sono più prolisse delle query JPQL
+** richiedono la creazione di molti oggetti ed eseguire diversi metodi per sottomettere le query
 
 == Implementazioni JPA
 
