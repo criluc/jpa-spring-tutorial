@@ -7,21 +7,45 @@ Marco Andreini <marco.andreini@besmartbeopen.it>
 :revealjs_slideNumber: true
 :sourcedir: ../main/java
 
-== Agenda
+== Ancora sul framework
 
-* bean validation
-* security
-* messaggi / flash
+[%step]
+* database connection pooling
+* data-binding
+* validazione
+* notifiche flash
 * logging
+* security
 
-== Controller
+== Connessioni al database
 
-* In alcuni framework Web è presente il concetto di "controller" - simile a
-quello espresso nel _Design Pattern_ *MVC*
-* si occupa di uno o più richieste web per oggetti specifi
+[%step]
+. l'utilizzo di una connessione JDBC per ciascuna richiesta web può rallentare
+. si utilizza per questo un pool di connessioni JDBC disponibili per tutta
+l'applicazione
+. eventualmente il pool può essere dinamico (min-max)
+. per ogni nuova richiesta si può prelevare una delle connessioni JDBC libere
+** se non ce ne sono sarà possibile attendere che se ne liberi una
+** oppure attivare una nuova connessione al database, se possibile.
+
 
 == Data Binding in Spring
 
+Il *data binding* è il processo di traduzione dei dati presenti nelle richieste
+web (siano GET, POST, ...) in parametri (bean) dei metodi dei controller
+[source,java]
+----
+@Controller
+public class Articles {
+  // ...
+
+  @RequestMapping("/article/{id}")
+  public String article(Integer id, Model model) { // <1>
+    // ...
+  }
+}
+----
+<1> Nel `@RequestMapping` si fornisce l'indicazione di un parametro `id` che è qui utilizzato.
 
 
 == Validazione
@@ -34,7 +58,7 @@ quello espresso nel _Design Pattern_ *MVC*
 
 == javax.validation
 
-Ecco un primo esempio di annotazioni di validazione:
+Ecco un esempio di annotazioni per la validazione:
 
 [source,java]
 ----
