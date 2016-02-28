@@ -31,27 +31,49 @@ l'applicazione
 
 == Data Binding in Spring
 
-Il *data binding* è il processo di traduzione dei dati presenti nelle richieste
-web (siano GET, POST, ...) in parametri (bean) dei metodi dei controller
+* Il *data binding* è il processo di conversione dei dati presenti nelle richieste
+web (siano GET, POST, ...) in parametri dei metodi dei controller
+** con @RequestMapping e @PathVariable abbiamo già visto un modo per impostare parametri semplici
+*** interi, stringhe, ...
+
+== Form in Spring
+
+si possono impostare anche Bean, quindi più campi, passandoli con una form
+[source,html]
+----
+<html>
+ ...
+ <form action="/article" method="POST">
+   <div>
+     <input type="string" name="title" id="name" />
+     <label for="name">Titolo</label>
+   </div>
+   ...
+ </form>
+ ...
+----
+
+== Form in Spring^(2)^
+
 [source,java]
 ----
 @Controller
 public class Articles {
   // ...
 
-  @RequestMapping("/article/{id}")
-  public String article(Integer id, Model model) { // <1>
+  @RequestMapping("/article", method=RequestMethod.POST)             // <1>
+  public String save(@ModelAttribute Article article, Model model) { // <2>
     // ...
   }
 }
 ----
-<1> Nel `@RequestMapping` si fornisce l'indicazione di un parametro `id` che è qui utilizzato.
-
+<1> si indica che il percorso `article` è disponibile alle sole HTTP *POST*
+<2> con `@ModelAttribute` si indica che i valori della form saranno utilizzati per riempire un `article`
 
 == Validazione
 
 [%step]
-* Si incentra sulla specifica *Bean Validation* (JSR 303)
+* Si incentra sulle specifiche *Bean Validation* (JSR-303 e JSR-349)
 * Si utilizzano le annotazioni sui campi dei _bean_ per indicare la tipologia di validazione
 * È indipendente dal framework e dall'application server
 * I validatori si possono estendere e personalizzare
@@ -170,3 +192,26 @@ public class Person extends BaseEntity {
 I framework JPA prima di persistere l'oggetto, solitamente, applicano la
 validazione.
 
+== Validazione sui parametri web
+----
+@Controller
+public class Articles {
+
+  @RequestMapping("/article", method=RequestMethod.POST)
+  public String save(@Valid Article article,              // <1>
+                     BindingResult bindingResult,         // <2>
+                     Model model) {
+    if (bindingResult.hasErrors()) {                      // <3>
+      model.addAttribute("article", article);
+      return "article";                                   // <4>
+    }
+    // ... save
+    return "redirect:/list";                              // <5>
+  }
+}
+----
+<1> indica che `article` deve essere validato
+<2> contiene i risultati della validazione
+<3> si può controllare se `article` è valido
+<4> se ci sono errori, si restituisce la form da correggere
+<5> dopo la _POST_ corretta, si fa redirect all'elenco.

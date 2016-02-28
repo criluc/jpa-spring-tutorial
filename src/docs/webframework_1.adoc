@@ -96,9 +96,85 @@ conveniente a parti selezionate di un URL.
 ** contiene uno o più nomi di variabili
 ** quando sostituiamo il valore di queste variabili, il template in questione
 diventa una URI.
-* per esempio, l'URI Template `http://www.example.com/users/{userId}` contiene
+
+== @RequestMapping: esempio
+
+* per esempio, l'URI Template `http://www.esempio.it/users/{userId}` contiene
 la variabile userId.
-** Assegneremo il valore *fred* alla variabile userId andando su `http://www.example.com/users/fred`
+** si assegna il valore *mario* alla variabile *userId* consultando `http://www.esempio.it/users/mario`
+
+== @RequestMapping: dettagli
+[source,java]
+----
+@RequestMapping(value = "/users/{userId}", method = RequestMethod.GET) // <1>
+public String findUser(@PathVariable String userId, Model model) {     // <2>
+    User user = userDao.findById(userId);
+    model.addAttribute("user", user);
+    return "displayUser";
+}
+----
+<1> indicazione del template URI e della variabile *userId*
+<2> utilizzo della variabile *userId*
+
+== @RequestMapping: dettagli^(2)^
+[source,java]
+----
+@Controller
+@RequestMapping(value = "/users/{userId}")                                // <1>
+public class UsersController {
+    @RequestMapping(value = "/docs/{docId}", method = RequestMethod.GET)  // <2>
+    public String findDoc(@PathVariable String userId,                    // <3>
+                          @PathVariable String docId,                     // <4>
+                          Model model) {
+        ...
+    }
+}
+----
+<1> template URI di base sul controller; da notare la *userId*
+<2> template URI del metodo; da notare l'altro paremetro *docId*
+<3> utilizzo della *userId*
+<4> utilizzo della *docId*
+
+== Vincoli su @RequestMapping
+
+* è possibile vincolare le variabili con *espressioni regolari*
+[source,java]
+----
+@RequestMapping(value = "/users/{userId:[a-z-]+}")                 // <1>
+public String findUser(@PathVariable String userId, Model model) {
+    ...
+}
+----
+<1> in questo modo possono essere solo lettere minuscole, dalla *a* alla *z*
+
+== Risorse statiche
+
+* Si utilizza il `classpath:/static/**` -> src/main/resources/static
+* Le alternative disponibili sono:
+** classpath:/public/**
+** classpath:/resources/**
+** classpath:/META-INF/resources/**
+* Trattamento speciale per `index.html` posizionato in uno dei percorsi indicati
+
+== Archivi di risorse statiche
+
+* Si possono utilizzare i *webjar*
+** archivi di risorse statiche già pronte
+*** twitter-bootstrap, jquery ...
+* si indicano come dipendenze del progetto, quindi via `maven`
+* si utilizzano nel template con riferimenti statici:
+** esempio: /webjars/bootstrap/...
+
+== Logging
+
+[%step]
+* *Spring Boot* fornisce configurazioni già pronte per sistemi di logging:
+. `logback`
+. `log4j`
+. `java.util.logging`
+* negli esempi trattati useremo logback
+
+  Esempi di logging
 
 == Agenda
 
