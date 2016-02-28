@@ -1,4 +1,4 @@
-= Web Framework Avanzato
+= Web Framework (continua)
 Marco Andreini <marco.andreini@besmartbeopen.it>
 2016-02-23
 :source-highlighter: highlightjs
@@ -14,7 +14,6 @@ Marco Andreini <marco.andreini@besmartbeopen.it>
 * data-binding
 * validazione
 * notifiche flash
-* logging
 * security
 
 == Connessioni al database
@@ -206,7 +205,7 @@ public class Articles {
       return "article";                                   // <4>
     }
     // ... save
-    return "redirect:/list";                              // <5>
+    return "redirect:/";                              // <5>
   }
 }
 ----
@@ -215,3 +214,23 @@ public class Articles {
 <3> si può controllare se `article` è valido
 <4> se ci sono errori, si restituisce la form da correggere
 <5> dopo la _POST_ corretta, si fa redirect all'elenco.
+
+== Spring Security
+
+[%step]
+* È un framework potente e particolarmente personalizzabile per:
+** l'autenticazione
+** il controllo degli accessi
+* è lo standard per le applicazioni basate su Spring Framework
+* è impostabile come modulo aggiuntivo su *Spring Boot*
+** occorre soltanto aggiungere il modulo *spring-boot-starter-security*
+
+== Spring Security^(2)^
+
+[%step]
+* Supporta vari sistemi di autenticazione con
+** HTTP Basic
+** HTTP Digest
+** HTTP X.509
+** Form/Session
+* inoltre integra tecnologie come LDAP, OpenID, OAuth, ... e molti altre.
