@@ -1,6 +1,6 @@
-= Introduzione a JPA^(3)^
+= Advanced JPA
 Cristian Lucchesi <cristian.lucchesi@gmail.com>
-2016-02-23
+2016-02-28
 :source-highlighter: highlightjs
 :backend: revealjs
 :revealjs_theme: night
@@ -535,6 +535,24 @@ public List<Person> list(int maxResults) {
 }
 ----
 
+== @NamedQuery
+
+* Si possono definire query statiche con nome
+** Raccomandate perché le query usufruiscono del sistema di *cache*
+[source,java]
+----
+@NamedQuery(name="ordered",  query="SELECT e FROM BlogEntry e ORDER BY e.date ASC")
+public class BlogEntry {
+...
+----
+
+[source,java]
+----
+public List<BlogEntry> allEntriesOrdered() {
+    return entityManager.createNamedQuery("ordered", BlogEntry.class).getResultList();
+}
+----
+
 == Named Parameter
 
 * sono parametri della query prefissati con due punti (:).
@@ -789,7 +807,7 @@ SELECT c.status, AVG(o.totalPrice)
 * Aritmetiche: ABS, MOD, SQRT, SIZE
 * Date/Time: CURRENT_DATE, CURRENT_TIME, CURRENT_TIMESTAMP
 * Subquery: simili alle subquery SQL
-* Case Expressio: CASE TYPE(p) WHEN...
+* Case Expression: CASE TYPE(p) WHEN...
 * ....
 
 Full Query Language Syntax::
@@ -804,26 +822,34 @@ Gli statemente *Update* e *delete* fornisco operazioni su un insieme di entity.
 update_statement :: = update_clause [where_clause] 
 delete_statement :: = delete_clause [where_clause]
 ----
-[source]
 
+* operano in accordo alle condizioni impostate nella WHERE
+* la clausola WHERE segue le stesse regole valide per la SELECT
 
-== @NamedQuery
-
-* Si possono definire query statiche con nome
-** Raccomandate perché le query usufruiscono del sistema di *cache*
-[source,java]
-----
-@NamedQuery(name="ordered",  query="SELECT e FROM BlogEntry e ORDER BY e.date ASC")
-public class BlogEntry {
-...
-----
+== Esempio Bulk Update
 
 [source,java]
 ----
-public List<BlogEntry> allEntriesOrdered() {
-    return entityManager.createNamedQuery("ordered", BlogEntry.class).getResultList();
-}
+UPDATE Player p
+  SET p.status = 'inactive'
+  WHERE p.lastPlayed < :inactiveThresholdDate
 ----
+
+Descrizione::
+Imposta a _inactive_ tutti i giocatori che non giocano da molto tempo
+
+== Esempio Bulk Delete
+
+[source,java]
+----
+DELETE FROM Player p
+  WHERE p.status = 'inactive'
+  AND p.teams IS EMPTY
+----
+
+Descrizione::
+Cancella tutti i giocatori inattivi che non appartengono a nessun Team
+
 
 == Criteria API
 
@@ -834,9 +860,10 @@ public List<BlogEntry> allEntriesOrdered() {
 * il `CriteriaBuidler` si ottiene utilizzando il metodo
 `EntityManager::getCriteriaBuilder`
 
-== Esempio di query con Criteria API
+== Esempio query con Criteria API
 
 [source,java]
+.String-based Query
 ----
 CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 CriteriaQuery<BlogEntry> criteriaQuery = builder.createQuery(BlogEntry.class);
@@ -848,6 +875,206 @@ TypedQuery<BlogEntry> typedQuery = entityManager.createQuery(criteriaQuery);
 typedQuery.setParameter(parameter, "il mio titolo");
 typedQuery.getSingleResult(); // recupera il blogentry con "il mio titolo"
 ----
+
+== Criteria API ≈ JPQL
+
+* Criteria API e JPQL sono strettamente legate e con operatori analoghi nelle loro query. 
+* gli sviluppatori familiari con la sintassi JPQL troverranno l'equivalente operazioni object-level nella Criteria API.
+
+[source,java]
+----
+CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.select(pet);
+TypedQuery<Pet> q = em.createQuery(cq);
+List<Pet> allPets = q.getResultList();
+----
+
+è equivalente a 
+
+[source,java]
+----
+List<Pet> allPets = 
+  entityManager.createQuery("SELECT p FROM Pet p", Pet.class).getResultList();
+----
+
+== Metamodel API
+
+* JPA2 prevede l'utilizzo di un Metamodel per ogni entity per garantire il typesafe delle query.
+* un Metamodel è una classe i cui attributi corrispondono ai campi persistenti ed alle relazioni dell'entity.
+* di solito la classe del Metamodel ha lo stesso il nome con un underscore (_) finale
+
+== Esempio Metamodel
+
+[source,java]
+----
+@Entity
+public class Pet {
+    @Id
+    protected Long id;
+    protected String name;
+    protected String color;
+    @ManyToOne
+    protected Set<Person> owners;
+    ...
+}
+----
+
+[source,java]
+----
+@Static Metamodel(Pet.class)
+public class Pet_ {
+    public static volatile SingularAttribute<Pet, Long> id;
+    public static volatile SingularAttribute<Pet, String> name;
+    public static volatile SingularAttribute<Pet, String> color;
+    public static volatile SetAttribute<Pet, Person> owners;
+}
+----
+
+== Esempi utilizzo Metamodel
+
+[source,java]
+----
+CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.where(cb.equal(pet.get(Pet_.name), "Fido"));
+----
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.where(pet.get(Pet_.color).isNull());
+----
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.where(pet.get(Pet_.color).in("brown", "black"));
+----
+
+== Generare il Metamodel
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.bsc.maven</groupId>
+    <artifactId>maven-processor-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>process</id>
+            <goals>
+                <goal>process</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+                <!-- source output directory -->
+                <outputDirectory>target/metamodel</outputDirectory>
+            </configuration>
+        </execution>
+    </executions>
+    <dependencies>
+      <dependency>        
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-jpamodelgen</artifactId>
+        <version>4.3.11.Final</version>
+      </dependency>
+    </dependencies>
+</plugin>
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>build-helper-maven-plugin</artifactId>
+    <version>1.3</version>
+    <executions>
+        <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+                <goal>add-source</goal>
+            </goals>
+            <configuration>
+                <sources>
+                    <source>target/metamodel</source>
+                </sources>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+== Criteria & Join
+
+[source,java]
+----
+public List<Pet> byOwnerName(String ownerName) {
+  CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+  CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+
+  Root<Pet> pet = cq.from(Pet.class);
+  Join<Pet, Owner> owner = pet.join(Pet_.owners); 
+  cq.select(pet).where(cb.equal(owner.get(Owner_.name), ownerName));
+
+  return entityManager.createQuery(criteriaQuery.where()).getResultList();
+}
+----
+
+== Comporre i predicati
+
+ * I predicati sono componibili con: and, or, not
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.where(cb.equal(pet.get(Pet_.name), "Fido")
+    .and(cb.equal(pet.get(Pet_.color), "brown")));
+----
+
+== Ordinare i risultati
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.select(pet);
+cq.orderBy(cb.desc(pet.get(Pet_.birthday)));
+----
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+Join<Owner, Address> address = pet.join(Pet_.owners).join(Owner_.address);
+cq.select(pet);
+cq.orderBy(cb.asc(address.get(Address_.postalCode)));
+----
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+Join<Pet, Owner> owner = pet.join(Pet_.owners);
+cq.select(pet);
+cq.orderBy(cb.asc(owner.get(Owner_.lastName)), owner.get(Owner_.firstName)));
+----
+
+
+== GroupBy & Having
+
+[source,java]
+----
+CriteriaQuery<Pet> cq = cb.createQuery(Pet.class);
+Root<Pet> pet = cq.from(Pet.class);
+cq.groupBy(pet.get(Pet_.color));
+cq.having(cb.in(pet.get(Pet_.color)).value("brown").value("blonde"));
+----
+
+Descrizione::
+Restituisce la lista di Pet il cui Owner si chiama come il parametro _ownerName_ passato
+
 
 == JPQL vs Criteria Query
 
@@ -886,3 +1113,10 @@ di application server:
 * EclipseLink, Oracle
 * OpenJPA
 ...
+
+== Riferimenti ed approfondimenti
+
+* Java Platform, Enterprise Edition: The Java EE Tutorial -> Persistence
+** https://docs.oracle.com/javaee/7/tutorial/partpersist.htm#BNBPY
+
+

@@ -32,7 +32,7 @@ public class House {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  //Targa
+  //Indirizzo
   private String address;
 
   @ManyToMany
