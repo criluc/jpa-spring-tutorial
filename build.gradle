@@ -17,7 +17,7 @@ buildscript {
 plugins {
   id 'org.asciidoctor.convert' version '1.5.2'
   id 'com.github.jruby-gradle.base' version '0.1.5'
-  //id "com.github.iboyko.gradle.plugins.jpamodelgen" version "1.0.1"
+  id 'at.comm_unity.gradle.plugins.jpamodelgen' version '1.1.1'
 }
 
 apply plugin: 'com.github.jruby-gradle.base'
@@ -26,6 +26,7 @@ apply plugin: 'org.asciidoctor.convert'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'at.comm_unity.gradle.plugins.jpamodelgen'
 
 ext {
   revealjsVersion = '3.2.0'
