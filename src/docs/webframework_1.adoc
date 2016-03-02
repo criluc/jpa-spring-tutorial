@@ -3,7 +3,7 @@ Marco Andreini <marco.andreini@besmartbeopen.it>
 2016-02-23
 :source-highlighter: highlightjs
 :backend: revealjs
-:revealjs_theme: night
+:revealjs_theme: 
 :revealjs_slideNumber: true
 :sourcedir: ../main/java
 
@@ -31,7 +31,7 @@ image::spring-overview.png[Spring Framework]
 [%step]
 * Il modulo *core* implementa le parti fondamentali del framework, includendo
 quindi le funzionalità di *Dependency Injection*.
-* Il modulo *bean* implementa il BeanFactory che una sofisticata implementazione
+* Il modulo *bean* implementa il BeanFactory che è una sofisticata implementazione
 del _factory pattern_.
 * Il modulo *context* è il mezzo per accedere agli oggetti definiti e configurati.
 * Il modulo *Expression Language* implementa un potente linguaggio per le
