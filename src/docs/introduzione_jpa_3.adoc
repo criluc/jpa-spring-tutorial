@@ -12,7 +12,7 @@ Cristian Lucchesi <cristian.lucchesi@gmail.com>
 * gli oggetti possono contenere uno o più riferimenti ad altri oggetti
 ** questi riferimenti prendono il nome di *relazioni*
 * le relazioni hanno diverse caratteristiche
-** la prima è la *direzionalità*, una relazione potrà essere:
+** *direzionalità*, una relazione potrà essere:
 *** unidirezionale se un oggetto fa riferimento ad un altro ma non avviene il contrario
 *** bidirezionale se il riferimento tra gli oggetti è reciproco
 
@@ -53,22 +53,17 @@ Person ha una relazione con Province ma non viceversa.
 
 ** altra caratteristica delle relazioni è l'opzionalità:
 *** non è detto che la relazione debba esistere necessariamente.
-*** Se non è obbligatoria, la relazione si dice opzionale.
+*** se non è obbligatoria, la relazione si dice opzionale.
 
 == Relazioni e molteplicità^(3)^
 
-* molteplicità della relazione
 * la relazione può sussistere verso uno o più oggetti, in entrambe le direzioni
-* si identificano pertanto tre tipi di relazioni
-** uno a uno 
-** uno a molti
-** molti a molti
+* tre tipi di relazioni in funzione della molteplicità
+** uno a uno, uno a molti, molti a molti
 
 JPA permette di gestire le relazioni e di risparmiarci di scrivere molto codice
 
 == Relazione uno a uno unidirezionale
-
-* si utilizza l’annotazione *@OneToOne*
 
 [source,java]
 ----
@@ -83,7 +78,8 @@ public class Account {
 }
 ----
 
-* nelle relazioni unidirezionali l'annotazione è solo nell’entità che possiede il riferimento (_owning side_)
+* si utilizza l’annotazione *@OneToOne*
+* l'annotazione è solo nell’entità che possiede il riferimento (_owning side_)
 * la tabella _persons_ avrà una colonna con la chiave esterna che si riferisce alla tabella _accounts_.
 
 == Relazione uno a uno bidirezionale
@@ -140,23 +136,18 @@ Person p = entityManager.find(Person.class, 1L);
 .query sql
 ----
 select
-    personwith0_.id as id1_3_1_,
-    personwith0_.account_id as account_4_3_1_,
-    personwith0_.name as name2_3_1_,
-    personwith0_.surname as surname3_3_1_,
-    account1_.id as id1_2_0_,
-    account1_.username as username2_2_0_ 
+  personwith0_.id as id1_3_1_, personwith0_.account_id as account_4_3_1_,
+  personwith0_.name as name2_3_1_, personwith0_.surname as surname3_3_1_,
+  account1_.id as id1_2_0_, account1_.username as username2_2_0_ 
 from
-    persons personwith0_ 
+  persons personwith0_ 
 left outer join
-    accounts account1_ 
-       on personwith0_.account_id=account1_.id 
+  accounts account1_   on personwith0_.account_id=account1_.id
 where
-    personwith0_.account_id=1
+  personwith0_.account_id=1
 ----
 
-Quando si carica un oggetto tramite l'EntityManager questo si occupa di caricare gli oggetti
-collegati con le opportune join.
+L'EntityManager si occupa di caricare gli oggetti collegati con le opportune join.
 
 == Annotazione @JoinColumn
 
@@ -371,7 +362,7 @@ WARN: HHH000437: Attempting to save one or more entities that have a non-nullabl
 
 [cols="1,4", options="header"]
 |===
-| Cascade Operation | Descrizione
+| Cascade | Descrizione
 
 | PERSIST
 | quando l'oggetto è _persisted_, anche l'entità collegata è _persisted_
@@ -390,7 +381,7 @@ WARN: HHH000437: Attempting to save one or more entities that have a non-nullabl
 
 [cols="1,4", options="header"]
 |===
-| Cascade Operation | Descrizione
+| Cascade | Descrizione
 
 | REFRESH
 | quando viene effettuta la _refresh_ dell'oggetto anche l'entità collegata viene ricaricata
@@ -668,8 +659,8 @@ SELECT DISTINCT p
 dati restituiti:: tutti i giocatori che appartengono almeno ad una squadra
 
 descrizione::
-* *p* rappresenta l'entità _Player_, *t* l'entità _Team_ correlata a p. 
-* *p.teams* naviga da un Player ai suoi Team correlati. 
+* *p* rappresenta l'entità _Player_, *t* l'entità _Team_ correlata 
+* *p.teams* naviga da un Player ai suoi Team correlati.
 * il punto (.)  nell'espressione  *p.teams* è l'operatore di navigazione
 
 
@@ -1113,6 +1104,24 @@ di application server:
 * EclipseLink, Oracle
 * OpenJPA
 ...
+
+== Utilizzare JPQL in Spring
+
+* org.springframework.data.jpa.repository.Query
+
+[source,java]
+----
+public interface ArticleDao extends PagingAndSortingRepository<Article, Integer> {
+  @Query("SELECT a FROM Article a WHERE a.author.surname = ?1")
+  List<Article> findByAuthorSurname(String surname);
+}
+----
+
+== Evoluzione del database
+
+* hibernate.ddl-auto =update VS database evolution
+* https://flywaydb.org/getstarted/how
+
 
 == Riferimenti ed approfondimenti
 
