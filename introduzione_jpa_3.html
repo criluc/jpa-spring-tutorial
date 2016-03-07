@@ -1,0 +1,551 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="author" content="Cristian Lucchesi" /><title>Advanced JPA</title><meta content="yes" name="apple-mobile-web-app-capable" /><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" name="viewport" /><link href="reveal.js/css/reveal.css" rel="stylesheet" /><link rel="stylesheet" href="reveal.js/css/theme/league.css" id="theme" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" /><link href="reveal.js/lib/css/zenburn.css" rel="stylesheet" /><script type="text/javascript">document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script></head><body><div class="reveal"><div class="slides"><section><h1>Advanced JPA</h1><p><small>Cristian Lucchesi</small></p></section><section id="relazioni-e-loro-caratteristiche"><h2>Relazioni e loro caratteristiche</h2><div class="ulist"><ul><li><p>gli oggetti possono contenere uno o più riferimenti ad altri oggetti</p><div class="ulist"><ul><li><p>questi riferimenti prendono il nome di <strong>relazioni</strong></p></li></ul></div></li><li><p>le relazioni hanno diverse caratteristiche</p><div class="ulist"><ul><li><p><strong>direzionalità</strong>, una relazione potrà essere:</p><div class="ulist"><ul><li><p>unidirezionale se un oggetto fa riferimento ad un altro ma non avviene il contrario</p></li><li><p>bidirezionale se il riferimento tra gli oggetti è reciproco</p></li></ul></div></li></ul></div></li></ul></div></section>
+<section id="relazioni-bidirezionali"><h2>Relazioni bidirezionali</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity
+public class Person {
+  private Account account;
+}
+@Entity
+public class Account {
+  // Possessore
+  private Person owner;
+}</code></pre></div></div>
+<div class="paragraph"><p>La Person ha una relazione con Account e viceversa.</p></div></section>
+<section id="relazioni-unidirezionali"><h2>Relazioni unidirezionali</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity
+public class Person {
+  //... Altre proprietà
+  private Province bornIn;
+}
+@Entity
+public class Province {
+  private String name;
+}</code></pre></div></div>
+<div class="paragraph"><p>Person ha una relazione con Province ma non viceversa.</p></div></section>
+<section id="relazioni-e-opzionalità"><h2>Relazioni e opzionalità</h2><div class="ulist"><ul><li><p>altra caratteristica delle relazioni è l&#8217;opzionalità:</p><div class="ulist"><ul><li><p>non è detto che la relazione debba esistere necessariamente.</p></li><li><p>se non è obbligatoria, la relazione si dice opzionale.</p></li></ul></div></li></ul></div></section>
+<section id="relazioni-e-molteplicità-sup-3-sup"><h2>Relazioni e molteplicità<sup>(3)</sup></h2><div class="ulist"><ul><li><p>la relazione può sussistere verso uno o più oggetti, in entrambe le direzioni</p></li><li><p>tre tipi di relazioni in funzione della molteplicità</p><div class="ulist"><ul><li><p>uno a uno, uno a molti, molti a molti</p></li></ul></div></li></ul></div>
+<div class="paragraph"><p>JPA permette di gestire le relazioni e di risparmiarci di scrivere molto codice</p></div></section>
+<section id="relazione-uno-a-uno-unidirezionale"><h2>Relazione uno a uno unidirezionale</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  private Account account;
+}
+@Entity @Table(name="accounts")
+public class Account {
+  // Non c'è il campo Person
+}</code></pre></div></div>
+<div class="ulist"><ul><li><p>si utilizza l’annotazione <strong>@OneToOne</strong></p></li><li><p>l&#8217;annotazione è solo nell’entità che possiede il riferimento (<em>owning side</em>)</p></li><li><p>la tabella <em>persons</em> avrà una colonna con la chiave esterna che si riferisce alla tabella <em>accounts</em>.</p></li></ul></div></section>
+<section id="relazione-uno-a-uno-bidirezionale"><h2>Relazione uno a uno bidirezionale</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  private Account account;
+}
+@Entity @Table(name="accounts")
+public class Account {
+  @OneToOne(mappedBy="account")
+  private Person person;
+}</code></pre></div></div>
+<div class="ulist"><ul><li><p>l&#8217;annotazione @OneToOne è su entrambe le entità (<em>owning side</em> e <em>inverse side</em>)</p></li><li><p>l&#8217;attributo <strong>mappedBy</strong> specifica il <strong>nome</strong> della proprietà java utilizzata nella @OneToOne che è <em>owning side</em></p></li></ul></div></section>
+<section id="l-importanza-dell-owning-side"><h2>L&#8217;importanza dell&#8217;owning side</h2><div class="ulist"><ul><li><p>il Persistence Runtime JPA (es. Hibernate) effettua aggiornamenti della relazione sul db solo quando si cambia l&#8217;owning side</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  private Account account;
+}
+@Entity @Table(name="accounts")
+public class Account {
+  @OneToOne(mappedBy="account")
+  private Person person;
+}
+...
+Person p = entityManager.getReference(Person.class, 1L);
+account.setPerson(p); // Non viene modificato il db
+
+Account a = entityManager.getReference(Account.class, 1L);
+person.setAccount(a); // viene aggiornato il db</code></pre></div></div></section>
+<section id="caricamento-delle-relazioni"><h2>Caricamento delle relazioni</h2><div class="listingblock"><div class="title">Esempio di find</div><div class="content"><pre class="highlight"><code class="java language-java">Person p = entityManager.find(Person.class, 1L);</code></pre></div></div>
+<div class="listingblock"><div class="title">query sql</div><div class="content"><pre class="highlight"><code class="sql language-sql">select
+  personwith0_.id as id1_3_1_, personwith0_.account_id as account_4_3_1_,
+  personwith0_.name as name2_3_1_, personwith0_.surname as surname3_3_1_,
+  account1_.id as id1_2_0_, account1_.username as username2_2_0_
+from
+  persons personwith0_
+left outer join
+  accounts account1_   on personwith0_.account_id=account1_.id
+where
+  personwith0_.account_id=1</code></pre></div></div>
+<div class="paragraph"><p>L&#8217;EntityManager si occupa di caricare gli oggetti collegati con le opportune join.</p></div></section>
+<section id="annotazione-joincolumn"><h2>Annotazione @JoinColumn</h2><div class="ulist"><ul><li><p>@JoinColumn permette di personalizzare la relazione:</p><div class="ulist"><ul><li><p><strong>name</strong>: (String default il nome della variabile)</p><div class="ulist"><ul><li><p>cambia il nome della colonna sul db</p></li></ul></div></li><li><p><strong>insertable</strong>: (boolean default true)</p><div class="ulist"><ul><li><p>se false la colonna viene omessa nella insert</p></li></ul></div></li><li><p><strong>updatable</strong>: (boolean default true)</p><div class="ulist"><ul><li><p>se false la colonna viene omessa nella update</p></li></ul></div></li></ul></div></li></ul></div></section>
+<section id="annotazione-joincolumn-sup-2-sup"><h2>Annotazione @JoinColumn<sup>(2)</sup></h2><div class="ulist"><ul><li><p>@JoinColumn permette di personalizzare la relazione:</p><div class="ulist"><ul><li><p><strong>nullable</strong> (boolean default true)</p><div class="ulist"><ul><li><p>utilizzata per determinare il tipo di JOIN eseguita da jpa (INNER vs LEFT)</p></li></ul></div></li><li><p>columnDefinition (String default "")</p><div class="ulist"><ul><li><p>frammento di SQL da utilizzare per la DDL della colonna</p></li></ul></div></li></ul></div></li></ul></div></section>
+<section id="annotazione-joincolumn-sup-3-sup"><h2>Annotazione @JoinColumn<sup>(3)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity @Table(name="persons")
+public class Person {
+  @OneToOne
+  @JoinColumn(name="account_id", updatable = false)
+  private Account account;
+}</code></pre></div></div>
+<div class="ulist"><ul><li><p>viene indicato il nome della colonna da utilizzare per le join e che il campo non è aggiornabile</p></li></ul></div></section>
+<section id="relazioni-uno-a-molti"><h2>Relazioni uno a molti</h2><div class="ulist"><ul><li><p>un&#8217;entità può essere associata a più di un oggetto dello stesso tipo</p></li><li><p>la relazione viene detta di tipo uno a molti.</p></li><li><p>analogamente alle relazioni uno ad uno può essere uni o bidirezionale</p></li></ul></div>
+<div class="paragraph"><p>In questo caso le annotazioni utilizzate sono:</p></div>
+<div class="ulist"><ul><li><p><strong>javax.persistence.OneToMany</strong></p></li><li><p><strong>javax.persistence.ManyToOne</strong></p></li></ul></div></section>
+<section id="relazioni-uno-a-molti-sup-2-sup"><h2>Relazioni uno a molti<sup>(2)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity @Table(name = "persons")
+public class Person {
+  @OneToMany(mappedBy = "owner")
+  private List&lt;Car&gt; cars = new ArrayList();
+}
+@Entity @Table(name = "cars")
+public class Car {
+  @ManyToOne
+  private Person owner;
+}</code></pre></div></div>
+<div class="ulist"><ul><li><p>una persona ha molte macchine @OneToMany</p></li><li><p>molte macchine hanno lo stesso (uno) proprietario @ManyToOne</p></li></ul></div></section>
+<section id="relazioni-uno-a-molti-sup-3-sup"><h2>Relazioni uno a molti<sup>(3)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity @Table(name = "orders")
+public class Order {
+  @Size(min = 1)
+  @OneToMany(mappedBy = "order")
+  private List&lt;LineItem&gt; lineItems = new ArrayList&lt;&gt;();
+}
+@Entity @Table(name = "order_line_items")
+public class LineItem {
+  @NotNull
+  @ManyToOne(optional = false)
+  private Order order;
+}</code></pre></div></div>
+<div class="ulist"><ul><li><p>un ordine ha molte righe di dettaglio (almeno una)</p></li><li><p>più righe di dettaglio appartengono allo stesso ordine</p></li><li><p>una riga di dettaglio deve appartenere ad un ordine</p></li></ul></div></section>
+<section id="utilizzo-delle-relazioni"><h2>Utilizzo delle relazioni</h2><div class="listingblock"><div class="title">Esempio Java</div><div class="content"><pre class="highlight"><code class="java language-java">Order order = entityManager.find(Order.class, 1L);
+System.out.println("Ordine " + order);
+for (LineItem lineItem : order.getLineItems()) {
+  System.out.println(
+    String.format("Riga %s. %s: %s euro",
+    lineItem.getId(), lineItem.getDescription(),lineItem.getAmount()));
+}</code></pre></div></div>
+<div class="listingblock"><div class="title">query sql</div><div class="content"><pre class="highlight"><code class="sql language-sql">select order0_.id as id1_4_0_ from orders order0_ where order0_.id=1
+
+select lineitems0_.order_id as order_id4_4_0_, lineitems0_.id as id1_1_0_,
+  lineitems0_.id as id1_1_1_, lineitems0_.amount as amount2_1_1_,
+  lineitems0_.description as descript3_1_1_,
+  lineitems0_.order_id as order_id4_1_1_
+from LineItem lineitems0_ where lineitems0_.order_id=1</code></pre></div></div>
+<div class="ulist"><ul><li><p>non c&#8217;è bisogno di preoccuparsi delle join&#8230;&#8203; ci pensa JPA</p></li></ul></div></section>
+<section id="relazioni-uno-a-molti-e-owning-side"><h2>Relazioni uno a molti e owning side</h2><div class="ulist"><ul><li><p>il possessore della relazione <em>owning side</em> è sempre con @ManyToMany</p></li><li><p>l'<em>inverse side</em> è sempre con @OneToMany che è quella con l&#8217;attributo mappedBy</p></li><li><p>il JPA Engine tiene traccia dei cambiamenti solo sull&#8217;owning side</p><div class="ulist"><ul><li><p>(come avviene per le relazioni @OneToOne)</p></li></ul></div></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">Order order = entityManager.find(Order.class, 1L);
+order.getLineItems().add(lineItem); // Non viene modificato il db
+
+LineItem li = entityManager.find(LineItem.class, 1L);
+li.setOrder(order); // viene aggiornato il db</code></pre></div></div></section>
+<section id="relazioni-molti-a-molti"><h2>Relazioni molti a molti</h2><div class="ulist"><ul><li><p>molte entità possono essere associate a molte altre entità dello stesso tipo</p></li><li><p>la relazione viene detta di tipo molti a molti</p></li><li><p>analogamente alle relazioni <em>one-to-one e</em> e <em>uno-to-many</em> può essere uni o bidirezionale</p></li><li><p>l&#8217;annotazione utilizzata è <strong>javax.persistence.ManyToMany</strong></p></li><li><p>nelle <em>many-to-many</em> l'<em>owning_side</em> può essere a scelta su uno qualunque dei lati della relazione</p></li></ul></div></section>
+<section id="relazioni-molti-a-molti-sup-2-sup"><h2>Relazioni molti a molti<sup>(2)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity @Table(name = "persons")
+public class Person {
+  @ManyToMany(mappedBy = "owners")
+  private List&lt;House&gt; houses = new ArrayList();
+}
+@Entity @Table(name = "houses")
+public class House {
+  @ManyToMany
+  private List&lt;Person&gt; owner = new ArrayList();
+}</code></pre></div></div>
+<div class="ulist"><ul><li><p>una persona può avere molte case</p></li><li><p>una casa può avere più proprietari</p></li></ul></div></section>
+<section id="jointable"><h2>@JoinTable</h2><div class="ulist"><ul><li><p>specifica la tabella di mapping dell&#8217;associazione.</p></li><li><p>è applicata al <em>owning side</em> dell&#8217;associazione</p></li><li><p>di solito è utilizzata nelle <em>many-to-many</em> e <em>one-to-many</em> unidirezionali</p></li><li><p>se non è presente il nome della <em>join table</em> è la concatenazione dei nomi delle tabelle in relazione tra di loro, separati da _ (underscore) e con l'<em>owning size</em> prima</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@ManyToMany
+@JoinTable(name = "persons_houses")
+private List&lt;Person&gt; owner = new ArrayList();</code></pre></div></div></section>
+<section id="jointable-joincolumns-inversejoincolumns"><h2>@JoinTable: joinColumns, inverseJoinColumns</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@ManyToMany
+@JoinTable(name = "persons_houses",
+   joinColumns=  @JoinColumn(name="house_id"), <i class="conum" data-value="1"></i><b>(1)</b>
+   inverseJoinColumns= @JoinColumn(name="person_id") <i class="conum" data-value="2"></i><b>(2)</b>
+   )
+private List&lt;PersonWithAccount&gt; owners = Lists.newArrayList();</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>colonna del db relativa alla <em>owning_side</em> dlela relazione</td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>colonna del db relativa alla <em>inverse_side</em> della relazione</td></tr></table></div></section>
+<section id="ordine-di-salvataggio-degli-oggetti-dipendenti"><h2>Ordine di salvataggio degli oggetti dipendenti</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">//...
+entityManager.getTransaction().begin();
+Order order = new Order();
+LineItem lineItem = new LineItem();
+lineItem.setOrder(order);
+entityManager.persist(lineItem); <i class="conum" data-value="1"></i><b>(1)</b>
+entityManager.persist(order);
+entityManager.getTransaction().commit();</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>In questo punto l&#8217;order non è ancora salvato (non ha un id associabile in <em>order_line_items</em>)</td></tr></table></div>
+<div class="openblock"><div class="content"><div class="paragraph"><p>WARN: HHH000437: Attempting to save one or more entities that have a non-nullable association with an unsaved transient entity. The unsaved transient entity must be saved in an operation prior to saving these dependent entities.</p></div></div></div></section>
+<section id="cascade-e-relazioni"><h2>Cascade e Relazioni</h2><div class="ulist"><div class="title">Table Operazioni in cascata per le Entity</div><ul><li><p>quando un&#8217;operazione è effettuata su un&#8217;entity si può scatenare la stessa operazione sulle entità collegate</p></li></ul></div>
+<table class="tableblock frame-all grid-all" style="width:100%"><colgroup><col style="width:20%" /><col style="width:80%" /></colgroup><thead><tr><th class="tableblock halign-left valign-top">Cascade</th><th class="tableblock halign-left valign-top">Descrizione</th></tr></thead><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">PERSIST</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">quando l&#8217;oggetto è <em>persisted</em>, anche l&#8217;entità collegata è <em>persisted</em></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">DETACH</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">quando l&#8217;oggetto è <em>detached</em>, anche l&#8217;entità collegata è <em>detached</em></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">MERGE</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">quando l&#8217;oggetto è <em>merged</em>, anche l&#8217;entità collegata è <em>merged</em></p></td></tr></tbody></table></section>
+<section id="cascade-e-relazioni-2"><h2>Cascade e Relazioni</h2><table class="tableblock frame-all grid-all" style="width:100%"><caption class="title">Table 1. Table Operazioni in cascata per le Entity<sup>(cont)</sup></caption><colgroup><col style="width:20%" /><col style="width:80%" /></colgroup><thead><tr><th class="tableblock halign-left valign-top">Cascade</th><th class="tableblock halign-left valign-top">Descrizione</th></tr></thead><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">REFRESH</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">quando viene effettuta la <em>refresh</em> dell&#8217;oggetto anche l&#8217;entità collegata viene ricaricata</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">REMOVE</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">quando viene rimosso l&#8217;oggetto anche l&#8217;entità collegata viene rimosa</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">ALL</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">tutte le operazioni sono applicate agli oggetti correlati. Equivalente a cascade={DETACH, MERGE, PERSIST, REFRESH, REMOVE}</p></td></tr></tbody></table></section>
+<section id="cascade-cascadetype"><h2>cascade = CascadeType.*</h2><div class="ulist"><ul><li><p>Valido per tutte le relazioni @OneToOne, @OneToMany, @ManyToOne, ..</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">import javax.persistence.CascadeType;
+//...
+public class Order {
+//...
+  @OneToMany(mappedBy = "order", cascade = { CascadeType.PERSIST, CascadeType.REMOVE)
+  private List&lt;LineItem&gt; lineItems = new ArrayList&lt;&gt;();</code></pre></div></div></section>
+<section id="esempio-di-cascadetype-persist"><h2>Esempio di CascadeType.Persist</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class Order {
+  //..
+  @OneToMany(mappedBy = "order", cascade = CascadeType.PERSIST)
+  private List&lt;LineItem&gt; lineItems = new ArrayList&lt;&gt;();
+}
+
+//...
+// utilizzo del Cascade
+Order order = new Order();
+LineItem lineItem = new LineItem();
+lineItem.setOrder(order);
+order.getLineItems().add(lineItem);
+entityManager.persist(order);</code></pre></div></div>
+<div class="paragraph"><p>L&#8217;oggetto LineItem viene salvato per effetto del<br />
+cascade = CascadeType.PERSIST</p></div></section>
+<section id="esempio-di-cascadetype-remove"><h2>Esempio di CascadeType.REMOVE</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class Order {
+  //..
+  @OneToMany(mappedBy = "order", cascade = { CascadeType.PERSIST, CascadeType.REMOVE )
+  private List&lt;LineItem&gt; lineItems = new ArrayList&lt;&gt;();
+}
+
+//...
+// utilizzo del Cascade
+Order order = entityManager.find(Order.class, 1L);
+entityManager.remove(order);</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="sql language-sql">Hibernate:
+    select * from orders where id = 1
+Hibernate:
+    select * from order_line_items where order_id = 1
+Hibernate:
+    delete from order_line_items where id = 1
+Hibernate:
+    delete from orders where id = 1</code></pre></div></div></section>
+<section id="orphan-removal"><h2>Orphan Removal</h2><div class="ulist"><ul><li><p>nelle relazioni <em>one-to-one</em> e <em>one-to-many</em> quando un oggetto viene rimosso da una relazione è probabile che debba essere rimosso</p></li><li><p>questi oggetti sono considerati <strong>orphans</strong> e possono essere rimossi automaticamente utilizzando l&#8217;attributo <em>orphanRemoval</em></p></li><li><p>per esempio se un Order ha molti LineItem ed un LineItem viene rimosso dall&#8217;associazione, la LineItem è considerata un <em>orphan</em></p></li><li><p>se orphanRemoval è true, la LineItem sarà cancellata quando è rimossa l&#8217;associazione dall&#8217;ordine</p></li><li><p>l&#8217;attributo <strong>orphanRemoval</strong> in @OneToMany e @OneToOne accettata true/false ed il default è false</p></li></ul></div></section>
+<section id="esempio-di-orphan-removal-sup-2-sup"><h2>Esempio di Orphan Removal<sup>(2)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class Order {
+  @OneToMany(mappedBy = "order", orphanRemoval = true)
+  public List&lt;LineItems&gt; getLineItems() { ... }
+}
+// Esempio di utilizzo
+Order order = entityManager.getReference(Order.class, 11L)
+order.getLineItems().clear(); <i class="conum" data-value="1"></i><b>(1)</b></code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>La lista viene svuotata, gli oggetti LineItem diventano <em>orphan</em> e vengono cancellati</td></tr></table></div></section>
+<section id="quering-entities"><h2>Quering Entities</h2><div class="paragraph"><p>JPA fornisce due metodi per interrogare le Entity</p></div>
+<div class="ulist"><ul><li><p>Java Persistence query language (JPQL)</p><div class="ulist"><ul><li><p>linguaggio semplice basasto su stringhe e simile a SQL</p></li></ul></div></li><li><p>Criteria API</p><div class="ulist"><ul><li><p>un API Java utlizzata per creare query typesafe</p></li></ul></div></li></ul></div></section>
+<section id="java-persistence-query-language"><h2>Java Persistence query language</h2><div class="ulist"><ul><li><p>JPQL definisce le query per interrogare le Entity ed il loro stato di persistenza</p></li><li><p>le query sono portabili ed indipendenti dal data store (db)</p></li><li><p>il linguaggio utilizza le Entity e le loro relazioni come modello di astrazione del database</p><div class="ulist"><ul><li><p>le operazioni e le espressioni sono basate sul modello astratto</p></li></ul></div></li><li><p>lo <em>scope</em> delle query comprende le Entity gestite dalla stessa Persistent Unit</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="sql language-sql">SELECT a FROM Article a ORDER BY a.date ASC</code></pre></div></div></section>
+<section id="creazione-delle-query-con-jpql"><h2>Creazione delle Query con JPQL</h2><div class="paragraph"><p>EntityManager::createQuery permette di creare query dinamiche definite direttamente nella business logic dell&#8217;applicazione</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@PersistenceContext
+EntityManager entityManager;
+
+public List&lt;Person&gt; list(int maxResults) {
+  return entityManager
+      .createQuery(
+          "SELECT p FROM Person p", Person.class)
+     .setMaxResults(maxResults)
+     .getResultList();
+}</code></pre></div></div></section>
+<section id="namedquery"><h2>@NamedQuery</h2><div class="ulist"><ul><li><p>Si possono definire query statiche con nome</p><div class="ulist"><ul><li><p>Raccomandate perché le query usufruiscono del sistema di <strong>cache</strong></p></li></ul></div></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>@NamedQuery(name="ordered",  query="SELECT e FROM BlogEntry e ORDER BY e.date ASC")
+public class BlogEntry {
+...</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public List&lt;BlogEntry&gt; allEntriesOrdered() {
+    return entityManager.createNamedQuery("ordered", BlogEntry.class).getResultList();
+}</code></pre></div></div></section>
+<section id="named-parameter"><h2>Named Parameter</h2><div class="ulist"><ul><li><p>sono parametri della query prefissati con due punti (:).</p></li><li><p>sono sostituiti nella query eseguita tramite il metodo</p><div class="ulist"><ul><li><p><code>javax.persistence.Query.setParameter(String name, Object value)</code></p></li></ul></div></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@PersistenceContext
+EntityManager entityManager;
+
+public List&lt;Person&gt; byName(String firstname) {
+  return entityManager
+      .createQuery(
+          "SELECT p FROM Person p WHERE p.firstname = :firstname",
+          Person.class)
+     .setParameter("firstname", firstname)
+     .getResultList();
+}</code></pre></div></div></section>
+<section id="positional-parameter"><h2>Positional Parameter</h2><div class="ulist"><ul><li><p>parametri individuati con il punto interrogativo (?) seguiti da un numero</p></li><li><p>sono sostituiti nella query eseguita tramite il metodo</p><div class="ulist"><ul><li><p><code>javax.persistence.Query.Query.setParameter(integer position, Object value)</code></p></li></ul></div></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@PersistenceContext
+EntityManager entityManager;
+
+public List&lt;Person&gt; byName(String firstname) {
+  return entityManager
+      .createQuery(
+          "SELECT p FROM Person p WHERE p.firstname = ?1",
+          Person.class)
+     .setParameter(1, firstname)
+     .getResultList();
+}</code></pre></div></div></section>
+<section id="select-statement"><h2>SELECT statement</h2><div class="ulist"><ul><li><p>una select query ha sei elementi</p><div class="ulist"><ul><li><p>SELECT, FROM, WHERE, GROUP BY, HAVING e ORDER BY</p></li></ul></div></li><li><p>le clausole SELECT e FROM sono obbligatorie</p></li><li><p>WHERE, GROUP BY, HAVING, and ORDER sono opzionali</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="bnf language-bnf">QL_statement ::= select_clause from_clause
+  [where_clause][groupby_clause][having_clause][orderby_clause]</code></pre></div></div></section>
+<section id="select-e-where"><h2>SELECT e WHERE</h2><div class="ulist"><ul><li><p>SELECT definisce il tipo di oggetto o valore restituto</p></li><li><p>FROM definisce il contesto della query dichiarando uno o più variabili referenziabili nella parte SELECT e WHERE, può contenere</p><div class="ulist"><ul><li><p>il nome astratto di un&#8217;entità</p></li><li><p>una collezione riferita in un&#8217;entity</p></li><li><p>un elemento single-valued di una relazione</p></li></ul></div></li><li><p>WHERE è un&#8217;espressione condizionale che restringe gli oggetti restituiti dalla query</p></li></ul></div></section>
+<section id="group-by-having-order-by"><h2>GROUP BY, HAVING, ORDER BY</h2><div class="ulist"><ul><li><p>GROUP BY ragrruppa i risutalti della query in accordo ad un insieme di proprietà</p></li><li><p>HAVING è utilizzata con la GROUP BY per restringere i risultati in accordo a delle espressioni condizionali</p></li><li><p>definisce l&#8217;ordinamento dei risultati</p></li></ul></div></section>
+<section id="basic-example-select"><h2>Basic Example SELECT</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">SELECT p FROM Player p</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">dati restituiti</dt><dd><p>tutti i giocatori</p></dd><dt class="hdlist1">descrizione</dt><dd><p>la clausola FROM dichiara un variabile identificativa chiamata <strong>p</strong>, omettendo la keyword opzionale <strong>AS</strong></p></dd><dt class="hdlist1">Player</dt><dd><p>è l&#8217;abstract schema name dell&#8217;entity Player <code>@Entity class Player {&#8230;&#8203;}</code></p></dd></dl></div></section>
+<section id="eliminare-i-duplicati"><h2>Eliminare i duplicati</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">SELECT DISTINCT p FROM Player p
+  WHERE p.position = :position AND p.name = :name</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">dati restituti</dt><dd><p>i giocatori con una determinata posizione e nome</p></dd><dt class="hdlist1">descrizione</dt><dd><div class="ulist"><ul><li><p>position e name sono campi persistenti dell&#8217;entità Player.</p></li><li><p>nella WHERE si compare il valore dei campi nel db con quelli passati per parametro.</p></li><li><p>*DISTINCT" elimina eventuali duplicati</p></li></ul></div></dd></dl></div></section>
+<section id="navigare-le-relazioni"><h2>Navigare le relazioni</h2><div class="ulist"><ul><li><p>in JPQL un&#8217;espressione può attraversare o navigare le entità correlate tra di loro</p></li><li><p>questa funzionalità è la differenza principale tra JPQL e SQL</p></li><li><p>la nagivazione tra le entità correlate è molto semplificata rispetto all&#8217;SQL perché sfrutta la descrizione delle entity e delle sue relazioni</p></li></ul></div></section>
+<section id="simple-query-con-relazioni"><h2>Simple Query con relazioni</h2><div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT DISTINCT p
+  FROM Player p JOIN p.teams t</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">dati restituiti</dt><dd><p>tutti i giocatori che appartengono almeno ad una squadra</p></dd><dt class="hdlist1">descrizione</dt><dd><div class="ulist"><ul><li><p><strong>p</strong> rappresenta l&#8217;entità <em>Player</em>, <strong>t</strong> l&#8217;entità <em>Team</em> correlata</p></li><li><p><strong>p.teams</strong> naviga da un Player ai suoi Team correlati.</p></li><li><p>il punto (.)  nell&#8217;espressione  <strong>p.teams</strong> è l&#8217;operatore di navigazione</p></li></ul></div></dd></dl></div></section>
+<section id="simple-query-con-relazioni-sup-2-sup"><h2>Simple Query con relazioni<sup>(2)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT DISTINCT p
+  FROM Player p JOIN p.teams t</code></pre></div></div>
+<div class="paragraph"><p>è equivalente a</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT DISTINCT p
+  FROM Player p
+  WHERE p.team IS NOT EMPTY</code></pre></div></div>
+<div class="paragraph"><p>ed a</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT DISTINCT p
+  FROM Player p, IN (p.teams) t</code></pre></div></div></section>
+<section id="attraversare-le-relazioni"><h2>Attraversare le relazioni</h2><div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT DISTINCT p
+  FROM Player p JOIN p.teams
+  WHERE t.city = :city</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">dati restituiti</dt><dd><p>tutti i giocatori che appartengono ad una squadra di una determinata città</p></dd></dl></div>
+<div class="paragraph"><p>ATTENZIONE: nelle WHERE non si possono navigare le collezioni, non si può scrivere WHERE t.teams.city = :city (illegal expression)</p></div></section>
+<section id="navigazione-basata-su-campi-correlati"><h2>Navigazione basata su campi correlati</h2><div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT DISTINCT p
+  FROM Player p JOIN p.teams t
+  WHERE t.league.sport = :sport</code></pre></div></div>
+<div class="ulist"><ul><li><p>dato che <strong>league</strong> non è una collezione ma relazione <strong>league</strong> può essere seguita per arrivare al campo <strong>sport</strong> collegato</p></li></ul></div></section>
+<section id="altre-espressioni-condizionali"><h2>Altre espressioni condizionali</h2><div class="listingblock"><div class="title">Like Expression</div><div class="content"><pre class="highlight"><code>SELECT p FROM Player p
+  WHERE p.name LIKE 'Mich%'</code></pre></div></div>
+<div class="listingblock"><div class="title">Null Expression</div><div class="content"><pre class="highlight"><code>SELECT t FROM Team t
+  WHERE t.league IS NULL</code></pre></div></div>
+<div class="listingblock"><div class="title">IS Empty Expression</div><div class="content"><pre class="highlight"><code>SELECT p FROM Player p
+  WHERE p.teams IS EMPTY</code></pre></div></div></section>
+<section id="altre-espres-condizionali-sup-2-sup"><h2>Altre espres. condizionali<sup>(2)</sup></h2><div class="listingblock"><div class="title">BETWEEN Expression</div><div class="content"><pre class="highlight"><code>SELECT DISTINCT p FROM Player p
+  WHERE p.salary BETWEEN :lowerSalary AND :higherSalary</code></pre></div></div>
+<div class="listingblock"><div class="title">Operatori di comparazione</div><div class="content"><pre class="highlight"><code>SELECT DISTINCT p1
+  FROM Player p1, Player p2
+  WHERE p1.salary &gt; p2.salary AND p2.name = :name</code></pre></div></div></section>
+<section id="uguaglianza-nelle-condizioni"><h2>Uguaglianza nelle condizioni</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public List&lt;Person&gt; havingHouse(House house) {
+  return entityManager.createQuery(
+      "SELECT p FROM Person JOIN p.houses h"
+      + " WHERE h = :house", Person.class)
+  .setParameter("house", house)
+  .getResultList();
+}</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">h = h:house</dt><dd><p>Compara gli oggetti di tipo House relazionati a Person con l&#8217;oggetto House passato per parametro</p></dd><dt class="hdlist1">Semantica dell&#8217;uguaglianza per le Entity</dt><dd><p>Due entity dello stesso <em>abstract schema type</em> sono considerate uguali se e solo se le loro chiavi primarie hanno lo stesso valore</p></dd></dl></div></section>
+<section id="order-by"><h2>ORDER BY</h2><div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT o
+  FROM Customer c JOIN c.orders o JOIN c.address a
+  WHERE a.state = 'CA'
+  ORDER BY o.quantity, o.totalcost</code></pre></div></div></section>
+<section id="group-by-e-having"><h2>GROUP BY e HAVING</h2><div class="listingblock"><div class="content"><pre class="highlight"><code>SELECT c.status, AVG(o.totalPrice)
+  FROM CustomerOrder o JOIN o.customer c
+  GROUP BY c.status HAVING c.status IN (1, 2, 3)</code></pre></div></div></section>
+<section id="altre-funzioni-jpql"><h2>ALTRE FUNZIONI JPQL</h2><div class="ulist"><ul><li><p>Stringhe: CONCAT, LENGTH, SUBSTRING, TRIM, LOWER, UPPER</p></li><li><p>Aritmetiche: ABS, MOD, SQRT, SIZE</p></li><li><p>Date/Time: CURRENT_DATE, CURRENT_TIME, CURRENT_TIMESTAMP</p></li><li><p>Subquery: simili alle subquery SQL</p></li><li><p>Case Expression: CASE TYPE(p) WHEN&#8230;&#8203;</p></li><li><p>&#8230;&#8203;.</p><div class="dlist"><dl><dt class="hdlist1">Full Query Language Syntax</dt><dd><p><a href="https://docs.oracle.com/javaee/7/tutorial/persistence-querylanguage005.htm" class="bare">https://docs.oracle.com/javaee/7/tutorial/persistence-querylanguage005.htm</a></p></dd></dl></div></li></ul></div></section>
+<section id="update-e-delete"><h2>UPDATE e DELETE</h2><div class="paragraph"><p>Gli statemente <strong>Update</strong> e <strong>delete</strong> fornisco operazioni su un insieme di entity.</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="bnf language-bnf">update_statement :: = update_clause [where_clause]
+delete_statement :: = delete_clause [where_clause]</code></pre></div></div>
+<div class="ulist"><ul><li><p>operano in accordo alle condizioni impostate nella WHERE</p></li><li><p>la clausola WHERE segue le stesse regole valide per la SELECT</p></li></ul></div></section>
+<section id="esempio-bulk-update"><h2>Esempio Bulk Update</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">UPDATE Player p
+  SET p.status = 'inactive'
+  WHERE p.lastPlayed &lt; :inactiveThresholdDate</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">Descrizione</dt><dd><p>Imposta a <em>inactive</em> tutti i giocatori che non giocano da molto tempo</p></dd></dl></div></section>
+<section id="esempio-bulk-delete"><h2>Esempio Bulk Delete</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">DELETE FROM Player p
+  WHERE p.status = 'inactive'
+  AND p.teams IS EMPTY</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">Descrizione</dt><dd><p>Cancella tutti i giocatori inattivi che non appartengono a nessun Team</p></dd></dl></div></section>
+<section id="criteria-api"><h2>Criteria API</h2><div class="ulist"><ul><li><p>sono una alternativa in JPA 2.x per a JPQL</p></li><li><p>le query sono dinamiche</p></li><li><p>si compongono a partire da oggetti Java standard</p><div class="ulist"><ul><li><p>le query sono create in modo typesafe</p></li></ul></div></li><li><p>il <code>CriteriaBuidler</code> si ottiene utilizzando il metodo
+<code>EntityManager::getCriteriaBuilder</code></p></li></ul></div></section>
+<section id="esempio-query-con-criteria-api"><h2>Esempio query con Criteria API</h2><div class="listingblock"><div class="title">String-based Query</div><div class="content"><pre class="highlight"><code class="java language-java">CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+CriteriaQuery&lt;BlogEntry&gt; criteriaQuery = builder.createQuery(BlogEntry.class);
+Root&lt;BlogEntry&gt; be = criteriaQuery.from(BlogEntry.class);
+ParameterExpression&lt;String&gt; title = builder.parameter(String.Class);
+criteriaQuery.select(be).where(builder.equals(be.get("title"), title);
+
+TypedQuery&lt;BlogEntry&gt; typedQuery = entityManager.createQuery(criteriaQuery);
+typedQuery.setParameter(parameter, "il mio titolo");
+typedQuery.getSingleResult(); // recupera il blogentry con "il mio titolo"</code></pre></div></div></section>
+<section id="criteria-api-jpql"><h2>Criteria API ≈ JPQL</h2><div class="ulist"><ul><li><p>Criteria API e JPQL sono strettamente legate e con operatori analoghi nelle loro query.</p></li><li><p>gli sviluppatori familiari con la sintassi JPQL troverranno l&#8217;equivalente operazioni object-level nella Criteria API.</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.select(pet);
+TypedQuery&lt;Pet&gt; q = em.createQuery(cq);
+List&lt;Pet&gt; allPets = q.getResultList();</code></pre></div></div>
+<div class="paragraph"><p>è equivalente a</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">List&lt;Pet&gt; allPets =
+  entityManager.createQuery("SELECT p FROM Pet p", Pet.class).getResultList();</code></pre></div></div></section>
+<section id="metamodel-api"><h2>Metamodel API</h2><div class="ulist"><ul><li><p>JPA2 prevede l&#8217;utilizzo di un Metamodel per ogni entity per garantire il typesafe delle query.</p></li><li><p>un Metamodel è una classe i cui attributi corrispondono ai campi persistenti ed alle relazioni dell&#8217;entity.</p></li><li><p>di solito la classe del Metamodel ha lo stesso il nome con un underscore (_) finale</p></li></ul></div></section>
+<section id="esempio-metamodel"><h2>Esempio Metamodel</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity
+public class Pet {
+    @Id
+    protected Long id;
+    protected String name;
+    protected String color;
+    @ManyToOne
+    protected Set&lt;Person&gt; owners;
+    ...
+}</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Static Metamodel(Pet.class)
+public class Pet_ {
+    public static volatile SingularAttribute&lt;Pet, Long&gt; id;
+    public static volatile SingularAttribute&lt;Pet, String&gt; name;
+    public static volatile SingularAttribute&lt;Pet, String&gt; color;
+    public static volatile SetAttribute&lt;Pet, Person&gt; owners;
+}</code></pre></div></div></section>
+<section id="esempi-utilizzo-metamodel"><h2>Esempi utilizzo Metamodel</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.where(cb.equal(pet.get(Pet_.name), "Fido"));</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.where(pet.get(Pet_.color).isNull());</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.where(pet.get(Pet_.color).in("brown", "black"));</code></pre></div></div></section>
+<section id="generare-il-metamodel"><h2>Generare il Metamodel</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="xml language-xml">&lt;plugin&gt;
+    &lt;groupId&gt;org.bsc.maven&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-processor-plugin&lt;/artifactId&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;process&lt;/id&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;process&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;phase&gt;generate-sources&lt;/phase&gt;
+            &lt;configuration&gt;
+                &lt;!-- source output directory --&gt;
+                &lt;outputDirectory&gt;target/metamodel&lt;/outputDirectory&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+    &lt;dependencies&gt;
+      &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-jpamodelgen&lt;/artifactId&gt;
+        &lt;version&gt;4.3.11.Final&lt;/version&gt;
+      &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/plugin&gt;
+&lt;plugin&gt;
+    &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+    &lt;artifactId&gt;build-helper-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;1.3&lt;/version&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;add-source&lt;/id&gt;
+            &lt;phase&gt;generate-sources&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;add-source&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;configuration&gt;
+                &lt;sources&gt;
+                    &lt;source&gt;target/metamodel&lt;/source&gt;
+                &lt;/sources&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;</code></pre></div></div></section>
+<section id="criteria-join"><h2>Criteria &amp; Join</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public List&lt;Pet&gt; byOwnerName(String ownerName) {
+  CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+  CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+
+  Root&lt;Pet&gt; pet = cq.from(Pet.class);
+  Join&lt;Pet, Owner&gt; owner = pet.join(Pet_.owners);
+  cq.select(pet).where(cb.equal(owner.get(Owner_.name), ownerName));
+
+  return entityManager.createQuery(criteriaQuery.where()).getResultList();
+}</code></pre></div></div></section>
+<section id="comporre-i-predicati"><h2>Comporre i predicati</h2><div class="ulist"><ul><li><p>I predicati sono componibili con: and, or, not</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.where(cb.equal(pet.get(Pet_.name), "Fido")
+    .and(cb.equal(pet.get(Pet_.color), "brown")));</code></pre></div></div></section>
+<section id="ordinare-i-risultati"><h2>Ordinare i risultati</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.select(pet);
+cq.orderBy(cb.desc(pet.get(Pet_.birthday)));</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+Join&lt;Owner, Address&gt; address = pet.join(Pet_.owners).join(Owner_.address);
+cq.select(pet);
+cq.orderBy(cb.asc(address.get(Address_.postalCode)));</code></pre></div></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+Join&lt;Pet, Owner&gt; owner = pet.join(Pet_.owners);
+cq.select(pet);
+cq.orderBy(cb.asc(owner.get(Owner_.lastName)), owner.get(Owner_.firstName)));</code></pre></div></div></section>
+<section id="groupby-having"><h2>GroupBy &amp; Having</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">CriteriaQuery&lt;Pet&gt; cq = cb.createQuery(Pet.class);
+Root&lt;Pet&gt; pet = cq.from(Pet.class);
+cq.groupBy(pet.get(Pet_.color));
+cq.having(cb.in(pet.get(Pet_.color)).value("brown").value("blonde"));</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">Descrizione</dt><dd><p>Restituisce la lista di Pet il cui Owner si chiama come il parametro <em>ownerName</em> passato</p></dd></dl></div></section>
+<section id="jpql-vs-criteria-query"><h2>JPQL vs Criteria Query</h2><div class="ulist"><ul><li><p>Vantaggi JPQL</p><div class="ulist"><ul><li><p>le query JPQL sono poche righe, coincise e più leggibili</p></li><li><p>gli sviluppatori già familiari con SQL le imparano velocemente</p></li><li><p>le JPQL NamedQuery possono essere definite e riutilizzate facilmente</p></li></ul></div></li></ul></div></section>
+<section id="jpql-vs-criteria-query-sup-2-sup"><h2>JPQL vs Criteria Query<sup>(2)</sup></h2><div class="ulist"><ul><li><p>Svantaggi JPQL</p><div class="ulist"><ul><li><p>JPQL query non sono typesafe</p></li><li><p>richiedono un cast quando si leggono i risultati dall&#8217;entityManager</p></li><li><p>sono sottoposte a problemi di type-casting non intercettabili a compile time</p></li><li><p>in caso di refactoring delle Entity non c&#8217;è nessun controllo sulle stringhe JPQL utilizzate</p></li></ul></div></li></ul></div></section>
+<section id="jpql-vs-criteria-query-sup-3-sup"><h2>JPQL vs Criteria Query<sup>(3)</sup></h2><div class="ulist"><ul><li><p>Vantaggi Criteria Query</p><div class="ulist"><ul><li><p>permettono di definire le query a livello applicativo con oggetti riutlizzabili</p></li><li><p>hanno migliori performance perché non necessitano il parsing della query (String) ogni volta</p></li><li><p>sono typesafe e non richiedono type casting</p></li><li><p>sono un API Java e non richiedono di imparare un nuovo linguaggio</p></li><li><p>in caso di rifattorizzazione le query sono parzialmente rifattorizzate automaticamente</p></li></ul></div></li></ul></div></section>
+<section id="jpql-vs-criteria-query-sup-4-sup"><h2>JPQL vs Criteria Query<sup>(4)</sup></h2><div class="ulist"><ul><li><p>Svantaggi di Criteria Query</p><div class="ulist"><ul><li><p>sono più prolisse delle query JPQL</p></li><li><p>richiedono la creazione di molti oggetti ed eseguire diversi metodi per sottomettere le query</p></li></ul></div></li></ul></div></section>
+<section id="implementazioni-jpa"><h2>Implementazioni JPA</h2><div class="paragraph"><p>Esistono varie implementazioni JPA che tipicamente sono utilizzati all&#8217;interno
+di application server:</p></div>
+<div class="ulist"><ul><li><p>Hibernate, in JBoss/RedHat</p></li><li><p>EclipseLink, Oracle</p></li><li><p>OpenJPA
+&#8230;&#8203;</p></li></ul></div></section>
+<section id="utilizzare-jpql-in-spring"><h2>Utilizzare JPQL in Spring</h2><div class="ulist"><ul><li><p>org.springframework.data.jpa.repository.Query</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public interface ArticleDao extends PagingAndSortingRepository&lt;Article, Integer&gt; {
+  @Query("SELECT a FROM Article a WHERE a.author.surname = ?1")
+  List&lt;Article&gt; findByAuthorSurname(String surname);
+}</code></pre></div></div></section>
+<section id="evoluzione-del-database"><h2>Evoluzione del database</h2><div class="ulist"><ul><li><p>hibernate.ddl-auto =update VS database evolution</p></li><li><p><a href="https://flywaydb.org/getstarted/how" class="bare">https://flywaydb.org/getstarted/how</a></p></li></ul></div></section>
+<section id="riferimenti-ed-approfondimenti"><h2>Riferimenti ed approfondimenti</h2><div class="ulist"><ul><li><p>Java Platform, Enterprise Edition: The Java EE Tutorial &#8594; Persistence</p><div class="ulist"><ul><li><p><a href="https://docs.oracle.com/javaee/7/tutorial/partpersist.htm#BNBPY" class="bare">https://docs.oracle.com/javaee/7/tutorial/partpersist.htm#BNBPY</a></p></li></ul></div></li></ul></div></section></div></div><script src="reveal.js/lib/js/head.min.js"></script><script src="reveal.js/js/reveal.js"></script><script type="text/javascript">// See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+Reveal.initialize({
+  // Display controls in the bottom right corner
+  controls: true,
+  // Display a presentation progress bar
+  progress: true,
+  // Display the page number of the current slide
+  slideNumber: true,
+  // Push each slide change to the browser history
+  history: true,
+  // Enable keyboard shortcuts for navigation
+  keyboard: true,
+  // Enable the slide overview mode
+  overview: true,
+  // Vertical centering of slides
+  center: true,
+  // Enables touch navigation on devices with touch input
+  touch: true,
+  // Loop the presentation
+  loop: false,
+  // Change the presentation direction to be RTL
+  rtl: false,
+  // Turns fragments on and off globally
+  fragments: true,
+  // Flags if the presentation is running in an embedded mode,
+  // i.e. contained within a limited portion of the screen
+  embedded: false,
+  // Number of milliseconds between automatically proceeding to the
+  // next slide, disabled when set to 0, this value can be overwritten
+  // by using a data-autoslide attribute on your slides
+  autoSlide: 0,
+  // Stop auto-sliding after user input
+  autoSlideStoppable: true,
+  // Enable slide navigation via mouse wheel
+  mouseWheel: false,
+  // Hides the address bar on mobile devices
+  hideAddressBar: true,
+  // Opens links in an iframe preview overlay
+  previewLinks: false,
+  // Theme (e.g., beige, black, league, night, serif, simple, sky, solarized, white)
+  // NOTE setting the theme in the config no longer works in reveal.js 3.x
+  //theme: Reveal.getQueryHash().theme || 'league',
+  // Transition style (e.g., none, fade, slide, convex, concave, zoom)
+  transition: Reveal.getQueryHash().transition || 'default',
+  // Transition speed (e.g., default, fast, slow)
+  transitionSpeed: 'default',
+  // Transition style for full page slide backgrounds (e.g., none, fade, slide, convex, concave, zoom)
+  backgroundTransition: 'fade',
+  // Number of slides away from the current that are visible
+  viewDistance: 3,
+  // Parallax background image (e.g., "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'")
+  parallaxBackgroundImage: '',
+  // Parallax background size in CSS syntax (e.g., "2100px 900px")
+  parallaxBackgroundSize: '',
+
+  // The "normal" size of the presentation, aspect ratio will be preserved
+  // when the presentation is scaled to fit different resolutions. Can be
+  // specified using percentage units.
+  width: 960,
+  height: 700,
+
+  // Factor of the display size that should remain empty around the content
+  margin: 0.1,
+
+  // Bounds for smallest/largest possible scale to apply to content
+  minScale: 0.2,
+  maxScale: 1.5,
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+      { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+});</script></body></html>

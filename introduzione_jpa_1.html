@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="author" content="Marco Andreini" /><title>Introduzione a JPA</title><meta content="yes" name="apple-mobile-web-app-capable" /><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" name="viewport" /><link href="reveal.js/css/reveal.css" rel="stylesheet" /><link rel="stylesheet" href="reveal.js/css/theme/league.css" id="theme" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" /><link href="reveal.js/lib/css/zenburn.css" rel="stylesheet" /><script type="text/javascript">document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script></head><body><div class="reveal"><div class="slides"><section><h1>Introduzione a JPA</h1><p><small>Marco Andreini</small></p></section><section id="architettura-multi-strato"><h2>Architettura multi strato</h2><div class="paragraph"><p>Per creare applicazioni - anche complesse - si può utilizzare una architettura
+multi-strato (<em>n-tier</em>).</p></div>
+<div class="paragraph"><p>Ciascuno strato:</p></div>
+<div class="ulist"><ul><li><p>si occupa di un insieme di funzionalità logicamente separato;</p></li><li><p>comunica con il precedente e il successivo;</p></li><li><p>è sviluppato separatamente e indipendentemente dagli altri.</p></li></ul></div></section>
+<section id="architettura-a-tre-livelli"><h2>Architettura a tre livelli</h2><div class="paragraph"><p>Le applicazioni web sono spesso strutturate su <strong>three-tier architecture</strong>:</p></div>
+<div class="olist arabic"><ol class="arabic"><li class="fragment"><p>livello di presentazione, con la quale si interagisce direttamente con l&#8217;utente</p></li><li class="fragment"><p>livello applicativo (<em>businness logic</em>), si occupa della logica di funzionamento</p></li><li class="fragment"><p>livello dati, si occupa dell&#8217;immagazzinamento dei dati su database</p></li></ol></div></section>
+<section id="object-relational-mapping"><h2>Object Relational Mapping</h2><div class="ulist"><ul><li class="fragment"><p>L&#8217;ORM si occupa di automatizzare il processo di trasformazione dei dati tra
+gli oggetti (istanze di classi) e i database.</p></li><li class="fragment"><p>Perché è utile?</p><div class="ulist"><ul><li><p>semplifica enormemente il lavoro di interfacciamento al database;</p></li><li><p>evita di dover scrivere le procedure di trasformazione a mano;</p></li><li><p>ci vogliamo concentrare sulla <em>logica di funzionamento</em> e non sulla
+struttura relazionale del database.</p></li></ul></div></li></ul></div></section>
+<section id="orm-altri-benefici"><h2>ORM: altri benefici</h2><div class="ulist"><ul><li class="fragment"><p>Permette una eventuale sincronizzazione automatica degli oggetti su database</p></li><li class="fragment"><p>È piuttosto indipendente dal tipo di database</p></li><li class="fragment"><p>Astrazione sui metodi di interrogazione</p></li><li class="fragment"><p>Prestazioni: utilizzando meccanismi di cache semi-automatici</p></li></ul></div></section>
+<section id="java-persistence-api"><h2>Java Persistence API</h2><div class="ulist"><ul><li><p>JPA è una specifica java (<em>JSR</em>) per <strong>accedere</strong>, <strong>memorizzare</strong> e <strong>gestire</strong> dati di
+oggetti Java specifici e database relazionali.</p></li><li><p>È confinato nel package <code>javax.persistence</code> e non fa parte della dotazione
+standard JavaSE.</p></li><li><p>È considerato l'<em>ORM</em> standard in ambiente Java.</p></li><li><p>È stato inizialmente definito nella specifica EJB3.0.</p></li></ul></div></section>
+<section id="hibernate-come-jpa"><h2>Hibernate come JPA</h2><div class="paragraph"><p>Hibernate è un ORM che implementa la specifica JPA.</p></div>
+<div class="ulist"><ul><li><p>Esistono diverse specifiche JPA (1.0, 2.0, 2.1…)</p></li><li><p>Queste specifiche sono implementate in Hibernate in varie versioni.</p></li><li><p>Noi utilizzeremo come riferimento la specifica JPA 2.0, che è implementata
+in Hibernate a partire dalla 4.0</p></li></ul></div></section>
+<section id="una-entity"><h2>Una entity</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity                             <i class="conum" data-value="1"></i><b>(1)</b>
+public class BlogEntry {
+  @Id @GeneratedValue               <i class="conum" data-value="2"></i><b>(2)</b>
+  private Integer id;
+  @Column(nullable=false)           <i class="conum" data-value="3"></i><b>(3)</b>
+  private String title;
+  private String summary;           <i class="conum" data-value="4"></i><b>(4)</b>
+  private String body;              <i class="conum" data-value="4"></i><b>(4)</b>
+  @Temporal(TemporalType.TIMESTAMP) <i class="conum" data-value="5"></i><b>(5)</b>
+  private Date date;
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>indica che l&#8217;entity si riferisce a una TABLE di nome blog_entry</td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>si riferisce alla colonna <code>id</code>, chiave primaria autoincrementale</td></tr><tr><td><i class="conum" data-value="3"></i><b>3</b></td><td>si riferisce alla colonna <code>title</code>, di tipo VARCHAR NOT NULL</td></tr><tr><td><i class="conum" data-value="4"></i><b>4</b></td><td>si riferiscono a colonne di tipo VARCHAR</td></tr><tr><td><i class="conum" data-value="5"></i><b>5</b></td><td>si riferisce alla colonna <code>date</code> di tipo 'TIMESTAMP'</td></tr></table></div></section>
+<section id="jpa-e-pojo"><h2>JPA e POJO</h2><div class="paragraph"><p>Si utilizzano oggetti di tipo POJO (Plain Old Java Object) e
+la persistenza riguarda:</p></div>
+<div class="ulist"><ul><li><p>il salvataggio dei valori dei campi di questi oggetti</p></li><li><p>la loro consultazione</p></li><li><p>la loro gestione (aggiornamento, cancellazione,&#8230;&#8203;)</p></li><li><p>ogni oggetto tipicamente rappresenta una riga di una tabella</p></li></ul></div></section>
+<section id="annotazioni-jpa"><h2>Annotazioni JPA</h2><div class="ulist"><ul><li class="fragment"><p>Le caratteristiche degli oggetti coinvolti - prevalentemente entity - sono
+definite da annotazioni specifiche.</p></li><li class="fragment"><p>Queste annotazioni indicano quale comportamento deve avere il JPA (ciò che
+implementa la specifica JPA, per esempio Hibernate).</p><div class="ulist"><ul><li><p>In precedenza si utilizzavano file di mappatura entity-table inseriti
+in appositi file XML (.hbm.xml per Hibernate).</p></li></ul></div></li></ul></div></section>
+<section id="mappatura-automatica"><h2>Mappatura automatica</h2><div class="paragraph"><p>In JPA è possibile utilizzare l&#8217;associazione automatica tra istanze in java e
+tabelle in funzione delle annotazioni presenti sulle entity.</p></div>
+<div class="ulist"><ul><li><p>l&#8217;associazione viene effettuata all&#8217;avvio del sistema JPA</p></li><li><p>tipicamente viene effettuato il <strong>classpath scan</strong> (ricerca nelle classi java)</p></li><li><p>è anche possibile indicare esplicitamente quali siano le classi da persistere</p></li></ul></div></section>
+<section id="entity"><h2>@Entity</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Entity                             <i class="conum" data-value="1"></i><b>(1)</b>
+public class BlogEntry {
+  @Id @GeneratedValue               <i class="conum" data-value="2"></i><b>(2)</b>
+  private Integer id;
+  @Column(nullable=false)           <i class="conum" data-value="3"></i><b>(3)</b>
+  private String title;
+  private String summary;           <i class="conum" data-value="4"></i><b>(4)</b>
+  private String body;              <i class="conum" data-value="4"></i><b>(4)</b>
+  @Temporal(TemporalType.TIMESTAMP) <i class="conum" data-value="5"></i><b>(5)</b>
+  private Date date;
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>indica che l&#8217;entity si riferisce a una TABLE di nome blog_entry</td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>si riferisce alla colonna <code>id</code>, chiave primaria autoincrementale</td></tr><tr><td><i class="conum" data-value="3"></i><b>3</b></td><td>si riferisce alla colonna <code>title</code>, di tipo VARCHAR NOT NULL</td></tr><tr><td><i class="conum" data-value="4"></i><b>4</b></td><td>si riferiscono a colonne di tipo VARCHAR</td></tr><tr><td><i class="conum" data-value="5"></i><b>5</b></td><td>si riferisce alla colonna <code>date</code> di tipo 'TIMESTAMP'</td></tr></table></div></section>
+<section id="persistence-unit"><h2>Persistence Unit</h2><div class="ulist"><ul><li class="fragment"><p>è definito dall&#8217;insieme di classi gestite da un&#8217;istanza dell&#8217;EntityManager.</p></li><li class="fragment"><p>definisce la corrispondaza di un insieme di classi di entity con un database
+relazionale</p></li><li class="fragment"><p>effettua la serializzazione e deserializzazione controllate verso/dal database
+relazionale</p></li></ul></div></section>
+<section id="persistence-unit-sup-2-sup"><h2>Persistence Unit<sup>(2)</sup></h2><div class="ulist"><ul><li><p>è definito per mezzo del framework che implementa la specifica JPA</p></li><li><p>tipicamente si definiscono le <strong>Persistence Unit</strong> nel filel
+<code>META-INF/persistence.xml</code>:</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
+  version="1.0"&gt;
+  &lt;persistence-unit name="myunit" transaction-type="RESOURCE_LOCAL"&gt;
+    &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
+    &lt;properties&gt;
+      &lt;property name="connection.driver_class" value="org.h2.Driver" /&gt;
+      &lt;property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" /&gt;
+      &lt;property name="hibernate.hbm2ddl.auto" value="update" /&gt;
+      &lt;property name="hibernate.show_sql" value="true" /&gt;
+    &lt;/properties&gt;
+  &lt;/persistence-unit&gt;</code></pre></div></div></section>
+<section id="persistence-context"><h2>Persistence Context</h2><div class="ulist"><ul><li><p>è l&#8217;insieme delle istanze di entity in un certo insieme di dati</p></li><li><p>conosce lo stato delle istanze di entity rispetto al database (<code>detached</code>, <code>managed</code>,&#8230;&#8203;)</p></li></ul></div></section>
+<section id="id"><h2>@Id</h2><div class="paragraph"><p>Occorre annotare con <code>@Id</code> il campo che identifica la chiave primaria</p></div>
+<div class="ulist"><ul><li class="fragment"><p>Solitamente è di tipo numerico o stringa</p></li><li class="fragment"><p>Ci deve essere un solo campo annotato con <code>@Id</code> per entity.</p></li><li class="fragment"><p>Visto che le entity sono confrontate tramite il metodo <code>equals</code>, occorre che
+si utilizzi in questi confronti il campo annotato con <code>@Id</code>.</p></li></ul></div></section>
+<section id="chiavi-primarie"><h2>Chiavi primarie</h2><div class="ulist"><ul><li><p>Se necessario è possibile creare chiavi primarie composte – anche se
+solitamente non è consigliabile.</p></li><li><p>Si può indicare una strategia per la generazione automatica dei valori delle
+chiavi primarie con:</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>  @Id // identifica la chiave primaria
+  @GeneratedValue // indica che il valore è autogenerato dall'ORM/DB
+  private Integer id;</code></pre></div></div></section>
+<section id="column"><h2>@Column</h2><div class="paragraph"><p>L&#8217;annotazione <code>@Column</code> può essere utilizzata su tutti i campi che corrispondono
+ad una colonna per:</p></div>
+<div class="ulist"><ul><li><p>indicare il nome della colonna corrispondente (con <code>name=&#8230;&#8203;</code>), che
+altrimenti sarà il nome del campo (opportunamente traslato)</p></li><li><p>indicare se il campo può assumere i valori <code>null</code> (<em>default</em>) o meno (con <code>nullable=false</code>)</p></li><li><p>indicare se la colonna corrispondente deve avere una chiave univoca (con <code>unique=true</code>)</p></li></ul></div>
+<div class="paragraph"><p>Altri attributi usati più di rado: columnDefinition, length, insertable, updatable, &#8230;&#8203;</p></div></section>
+<section id="schema"><h2>Schema</h2><div class="ulist"><ul><li><p>In Hibernate - ma anche con altri framework JPA - è possibile</p><div class="ulist"><ul><li><p>definire come far interagire il database in fase di creazione
+del Persistence Context.</p></li><li><p>si possono verificare/creare/distruggere le tabelle in automatico</p></li><li><p>è comunque un comportamento opzionale</p></li><li><p>ciò permette di scegliere in funzione della fase progettuale il comportamento
+più indicato</p></li></ul></div></li></ul></div></section>
+<section id="schema-sup-2-sup"><h2>Schema<sup>(2)</sup></h2><div class="paragraph"><p>Più nel dettaglio in Hibernate si può utilizzare uno di questi valori:</p></div>
+<div class="dlist"><dl><dt class="hdlist1">validate</dt><dd><p>valida lo schema (utile in fase di produzione o pre-produzione)</p></dd><dt class="hdlist1">update</dt><dd><p>modifica se necessario lo schema (utile a volte in sviluppo)</p></dd><dt class="hdlist1">create</dt><dd><p>crea le tabelle mancanti nello schema (utile per i test)</p></dd><dt class="hdlist1">create-drop</dt><dd><p>distrugge le tabelle coinvolte e le ricrea (utile per i test)</p></dd></dl></div></section>
+<section id="differenze-tra-attributi-delle-annotazioni"><h2>Differenze tra attributi delle annotazioni</h2><div class="ulist"><ul><li><p>Gli attributi delle annotazioni del package <code>javax.persistence</code> hanno effetti
+differenti sull&#8217;ORM</p></li><li><p>alcune annotazioni/attributi come ad esempio il <code>@Column(name="mycolumn")</code> indicano</p><div class="ulist"><ul><li><p>in fase di creazione della tabella che il nome della colonna sarà <code>mycolumn</code></p></li><li><p>durante le <code>SELECT/INSERT/UPDATE</code> il campo sarà associato alla colonna <code>mycolumn</code></p></li></ul></div></li></ul></div></section>
+<section id="differenze-tra-attributi-della-annotazioni-sup-2-sup"><h2>Differenze tra attributi della annotazioni<sup>(2)</sup></h2><div class="ulist"><ul><li><p>Altri attributi/annotazioni sono maggiormente di struttura</p></li><li><p>ad esempio <code>@Column(nullable=false)</code> indica</p><div class="ulist"><ul><li><p>in fase di creazione della tabella che la colonna in questione dovrà essere <code>NOT NULL</code></p></li><li><p>durante le <code>SELECT/INSERT/UPDATE</code> non ha praticamente effetti</p></li></ul></div></li></ul></div></section>
+<section id="table"><h2>@Table</h2><div class="paragraph"><p>Con <code>@Table</code> si possono annotare le entity con informazioni aggiuntive, che indicano:</p></div>
+<div class="ulist"><ul><li class="fragment"><p>il nome della tabella (altrimenti è quello dell&#8217;entity)</p></li><li class="fragment"><p>il nome del catalogo</p></li><li class="fragment"><p>il nome dello schema</p></li><li class="fragment"><p>eventuali vincoli di univocità (uniqueConstraints)</p></li><li class="fragment"><p>eventuali indici (indexes)</p></li></ul></div></section>
+<section id="entitymanager"><h2>EntityManager</h2><div class="ulist"><ul><li class="fragment"><p>permette di interagire col <em>Persistence Context</em></p></li><li class="fragment"><p>ha una API per gestire le istanze delle entity, interagendo col loro stato</p></li><li class="fragment"><p>permette di caricare, salvare, cercare&#8230;&#8203; le istanze delle entity</p></li></ul></div></section>
+<section id="come-ottenere-l-entitymanager"><h2>Come ottenere l&#8217;EntityManager</h2><div class="ulist"><ul><li><p>In modo dipendente dal framework in uso l&#8217;entityManager è:</p><div class="ulist"><ul><li><p>Injected dal framework in automatico (es. @PersistenceContext)</p></li><li><p>Creato a partire dall&#8217;EntityManagerFactory, creato e configurato una sola
+volta all&#8217;avvio dell&#8217;applicazione.</p></li></ul></div></li></ul></div></section>
+<section id="operazioni-di-base-sulle-entity"><h2>Operazioni di base sulle entity</h2><div class="ulist"><ul><li class="fragment"><p>creazione &#8594; <code>EntityManager::persist</code></p></li><li class="fragment"><p>recupero &#8594; <code>EntityManager::find</code></p></li><li class="fragment"><p>cancellazione &#8594; <code>EntityManager::remove</code></p></li></ul></div></section>
+<section id="entitymanager-persist"><h2>EntityManager::persist</h2><div class="paragraph"><p>Le entità sono regolari oggetti java fino a quando non
+vengono resi persistenti dall&#8217;EntityManager</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public void doThings() {
+ // ...
+ entityManager.persist(myBlogEntry); <i class="conum" data-value="1"></i><b>(1)</b></code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>rende persistente l&#8217;entità <code>myBlogEntry</code> nel database (cioè esegue la <code>INSERT</code> SQL)</td></tr></table></div></section>
+<section id="entitymanager-persist-sup-2-sup"><h2>EntityManager::persist<sup>(2)</sup></h2><div class="ulist"><ul><li><p>nella chiamata alla <code>persist</code> è verificato che non ci siano oggetti con lo
+stesso <strong>id</strong> nel database</p></li><li><p>nel caso viene sollevata una runtime exception: <code>EntityExistsException</code></p></li><li><p>dopo la chiamata alla <code>persist</code> l&#8217;istanza è gestita dal <code>PersistenceContext</code> (managed)</p></li></ul></div></section>
+<section id="esempio-di-persist"><h2>Esempio di persist</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">  BlogEntry myBlogEntry = new BlogEntry(); // crea una istanza
+  myBlogEntry.setDate(new Date());         // imposta i valori
+  myBlogEntry.setTitle("Corso Java");
+  myBlogEntry.setExcerpt("JPA/Hibernate");
+  myBlogEntry.setBody("contenuti...");
+  entityManager.persist(myBlogEntry);      // persiste l'oggetto</code></pre></div></div>
+<table class="tableblock frame-all grid-all" style="width:100%"><caption class="title">Table 1. blog_entry</caption><colgroup><col style="width:20%" /><col style="width:20%" /><col style="width:20%" /><col style="width:20%" /><col style="width:20%" /></colgroup><thead><tr><th class="tableblock halign-left valign-top">id</th><th class="tableblock halign-left valign-top">title</th><th class="tableblock halign-left valign-top">excerpt</th><th class="tableblock halign-left valign-top">body</th><th class="tableblock halign-left valign-top">date</th></tr></thead><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Corso Java</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">JPA/Hibernate</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">contenuti&#8230;&#8203;</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">2016-02-01 16:00:00
+</p><p class="tableblock">&#8230;&#8203;</p></td></tr></tbody></table></section>
+<section id="entitymanager-find"><h2>EntityManager::find</h2><div class="paragraph"><p>Il metodo <code>find</code> è utilizzabile per interrogare gli entity object</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public void loadBlogEntry() {
+ // ...
+ BlogEntry entry = entityManager.find(BlogEntry.class, myBlogId); <i class="conum" data-value="1"></i><b>(1)</b></code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>Carica dal database l&#8217;entity di tipo BlogEntry con <code>id</code> corrispondente a <code>myBlogId</code> (cioè effettua una SELECT)</td></tr></table></div></section>
+<section id="entitymanager-find-sup-2-sup"><h2>EntityManager::find<sup>(2)</sup></h2><div class="ulist"><ul><li><p>il metodo <code>find</code> accetta due paremetri</p><div class="ulist"><ul><li><p>la classe dell&#8217;entity</p></li><li><p>il valore della chiave primaria</p></li></ul></div></li><li><p>se non ci sono risultati per la ricerca con la chiave indicata, l&#8217;operazione restituisce <code>null</code>.</p></li><li><p>se invece ci sono, l&#8217;oggetto restituito dall&#8217;EntityManager diventa direttamente utilizzabile in Java</p><div class="ulist"><ul><li><p>lo stato di questa istanza sarà <code>managed</code></p></li></ul></div></li></ul></div></section>
+<section id="entitymanager-remove"><h2>EntityManager::remove</h2><div class="paragraph"><p>Si usa per cancellare una istanza di entity (quindi una riga) dal database:</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public void doThings() {
+ // ...
+ entityManager.remove(myBlogEntry); <i class="conum" data-value="1"></i><b>(1)</b></code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>Cancella dal database l&#8217;istanza <code>myBlogEntry</code>, cioè esegue una DELETE</td></tr></table></div></section>
+<section id="entitymanager-remove-sup-2-sup"><h2>EntityManager::remove<sup>(2)</sup></h2><div class="ulist"><ul><li><p>la <code>remove</code> accetta un solo parametro entity</p></li><li><p>l&#8217;entityObject fornito come parametro deve essere gestito dall&#8217;entityManager</p><div class="ulist"><ul><li><p>pena il fallimento della rimozione</p></li></ul></div></li><li><p>l&#8217;operazione di cancellazione dal db può avvenire successivamente</p><div class="ulist"><ul><li><p>dopo la <code>EntityManager::flush()</code> o comunque la chiusura della transazione</p></li></ul></div></li><li><p>dopo la chiamata, l&#8217;entity diventerà "detached" dal entityManager e non più gestita</p><div class="ulist"><ul><li><p>cioè sono interrotti gli automatismi di aggiornamento e di caricamento dei dati verso il db.</p></li></ul></div></li></ul></div></section>
+<section id="entity-lifecycle"><h2>Entity lifecycle</h2><div class="imageblock" style=""><div class="content"><img src="./images/entity_lifecycle.jpg" alt="Entity Lifecycle" /></div></div></section>
+<section id="entity-lifecycle-sup-2-sup"><h2>Entity lifecycle<sup>(2)</sup></h2><div class="ulist"><ul><li class="fragment"><p>le entity che sono nello stato di managed/persistent possono essere modificati
+dall&#8217;applicazione</p></li><li class="fragment"><p>qualsiasi modifica a queste entity è <strong>automaticamente identificata e
+persistita</strong> al momento in cui sarà effettuata la <code>flush</code> del <em>Pesistence Context</em></p></li><li class="fragment"><p>non è necessario effettuare chiamate a metodi particolari per
+rendere queste modifiche persisitenti</p></li><li class="fragment"><p>ci possono comunque essere altre modalità di gestire le transazioni.</p></li></ul></div></section>
+<section id="ricerche-code-jpql-code"><h2>Ricerche <code>JPQL</code></h2><div class="paragraph"><p>E se volessimo cercare una <code>Person</code> per nome o cognome? Ecco la
+<code>EntityManager::createQuery</code></p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">  public List&lt;Person&gt; byName(String firstname) {
+    return entityManager
+        .createQuery("SELECT p FROM Person p WHERE p.firstname = :firstname",
+            Person.class)
+        .setParameter("firstname", firstname).getResultList();
+  }</code></pre></div></div></section>
+<section id="jpql"><h2>JPQL</h2><div class="paragraph"><p>Java Persistence Query Language</p></div>
+<div class="ulist"><ul><li><p>è usato per definire ricerche su entità persistenti</p></li><li><p>è simile a SQL, ma è definito sulle entità e non sulle tabelle</p></li><li><p>è indipendente dal meccanismo utilizzato per immagazzinare le
+entity stesse.</p></li></ul></div>
+<div class="listingblock"><div class="title">esempio</div><div class="content"><pre class="highlight"><code class="sql language-sql">SELECT e FROM BlogEntry e WHERE e.date &gt;= '2016-01-01' ORDER BY title ASC</code></pre></div></div></section>
+<section id="architettura-hibernate"><h2>Architettura Hibernate</h2><div class="imageblock" style=""><div class="content"><img src="./images/hibernate_architecture.png" alt="Architettura Hibernate" /></div></div></section></div></div><script src="reveal.js/lib/js/head.min.js"></script><script src="reveal.js/js/reveal.js"></script><script type="text/javascript">// See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+Reveal.initialize({
+  // Display controls in the bottom right corner
+  controls: true,
+  // Display a presentation progress bar
+  progress: true,
+  // Display the page number of the current slide
+  slideNumber: true,
+  // Push each slide change to the browser history
+  history: true,
+  // Enable keyboard shortcuts for navigation
+  keyboard: true,
+  // Enable the slide overview mode
+  overview: true,
+  // Vertical centering of slides
+  center: true,
+  // Enables touch navigation on devices with touch input
+  touch: true,
+  // Loop the presentation
+  loop: false,
+  // Change the presentation direction to be RTL
+  rtl: false,
+  // Turns fragments on and off globally
+  fragments: true,
+  // Flags if the presentation is running in an embedded mode,
+  // i.e. contained within a limited portion of the screen
+  embedded: false,
+  // Number of milliseconds between automatically proceeding to the
+  // next slide, disabled when set to 0, this value can be overwritten
+  // by using a data-autoslide attribute on your slides
+  autoSlide: 0,
+  // Stop auto-sliding after user input
+  autoSlideStoppable: true,
+  // Enable slide navigation via mouse wheel
+  mouseWheel: false,
+  // Hides the address bar on mobile devices
+  hideAddressBar: true,
+  // Opens links in an iframe preview overlay
+  previewLinks: false,
+  // Theme (e.g., beige, black, league, night, serif, simple, sky, solarized, white)
+  // NOTE setting the theme in the config no longer works in reveal.js 3.x
+  //theme: Reveal.getQueryHash().theme || 'league',
+  // Transition style (e.g., none, fade, slide, convex, concave, zoom)
+  transition: Reveal.getQueryHash().transition || 'default',
+  // Transition speed (e.g., default, fast, slow)
+  transitionSpeed: 'default',
+  // Transition style for full page slide backgrounds (e.g., none, fade, slide, convex, concave, zoom)
+  backgroundTransition: 'fade',
+  // Number of slides away from the current that are visible
+  viewDistance: 3,
+  // Parallax background image (e.g., "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'")
+  parallaxBackgroundImage: '',
+  // Parallax background size in CSS syntax (e.g., "2100px 900px")
+  parallaxBackgroundSize: '',
+
+  // The "normal" size of the presentation, aspect ratio will be preserved
+  // when the presentation is scaled to fit different resolutions. Can be
+  // specified using percentage units.
+  width: 960,
+  height: 700,
+
+  // Factor of the display size that should remain empty around the content
+  margin: 0.1,
+
+  // Bounds for smallest/largest possible scale to apply to content
+  minScale: 0.2,
+  maxScale: 1.5,
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+      { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+});</script></body></html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="author" content="Marco Andreini" /><title>Web Framework (continua)</title><meta content="yes" name="apple-mobile-web-app-capable" /><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" name="viewport" /><link href="reveal.js/css/reveal.css" rel="stylesheet" /><link rel="stylesheet" href="reveal.js/css/theme/league.css" id="theme" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" /><link href="reveal.js/lib/css/zenburn.css" rel="stylesheet" /><script type="text/javascript">document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script></head><body><div class="reveal"><div class="slides"><section><h1>Web Framework (continua)</h1><p><small>Marco Andreini</small></p></section><section id="ancora-sul-framework"><h2>Ancora sul framework</h2><div class="ulist"><ul><li class="fragment"><p>database connection pooling</p></li><li class="fragment"><p>data-binding</p></li><li class="fragment"><p>validazione</p></li><li class="fragment"><p>notifiche flash</p></li><li class="fragment"><p>security</p></li></ul></div></section>
+<section id="connessioni-al-database"><h2>Connessioni al database</h2><div class="olist arabic"><ol class="arabic"><li class="fragment"><p>l&#8217;utilizzo di una connessione JDBC per ciascuna richiesta web può rallentare</p></li><li class="fragment"><p>si utilizza per questo un pool di connessioni JDBC disponibili per tutta
+l&#8217;applicazione</p></li><li class="fragment"><p>eventualmente il pool può essere dinamico (min-max)</p></li><li class="fragment"><p>per ogni nuova richiesta si può prelevare una delle connessioni JDBC libere</p><div class="ulist"><ul><li><p>se non ce ne sono sarà possibile attendere che se ne liberi una</p></li><li><p>oppure attivare una nuova connessione al database, se possibile.</p></li></ul></div></li></ol></div></section>
+<section id="data-binding-in-spring"><h2>Data Binding in Spring</h2><div class="ulist"><ul><li><p>Il <strong>data binding</strong> è il processo di conversione dei dati presenti nelle richieste
+web (siano GET, POST, &#8230;&#8203;) in parametri dei metodi dei controller</p><div class="ulist"><ul><li><p>con @RequestMapping e @PathVariable abbiamo già visto un modo per impostare parametri semplici</p><div class="ulist"><ul><li><p>interi, stringhe, &#8230;&#8203;</p></li></ul></div></li></ul></div></li></ul></div></section>
+<section id="form-in-spring"><h2>Form in Spring</h2><div class="paragraph"><p>si possono impostare anche Bean, quindi più campi, passandoli con una form</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="html language-html">&lt;html&gt;
+ ...
+ &lt;form action="/article" method="POST"&gt;
+   &lt;div&gt;
+     &lt;input type="string" name="title" id="name" /&gt;
+     &lt;label for="name"&gt;Titolo&lt;/label&gt;
+   &lt;/div&gt;
+   ...
+ &lt;/form&gt;
+ ...</code></pre></div></div></section>
+<section id="form-in-spring-sup-2-sup"><h2>Form in Spring<sup>(2)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Controller
+public class Articles {
+  // ...
+
+  @RequestMapping("/article", method=RequestMethod.POST)             <i class="conum" data-value="1"></i><b>(1)</b>
+  public String save(@ModelAttribute Article article, Model model) { <i class="conum" data-value="2"></i><b>(2)</b>
+    // ...
+  }
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>si indica che il percorso <code>article</code> è disponibile alle sole HTTP <strong>POST</strong></td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>con <code>@ModelAttribute</code> si indica che i valori della form saranno utilizzati per riempire un <code>article</code></td></tr></table></div></section>
+<section id="validazione"><h2>Validazione</h2><div class="ulist"><ul><li class="fragment"><p>Si incentra sulle specifiche <strong>Bean Validation</strong> (JSR-303 e JSR-349)</p></li><li class="fragment"><p>Si utilizzano le annotazioni sui campi dei <em>bean</em> per indicare la tipologia di validazione</p></li><li class="fragment"><p>È indipendente dal framework e dall&#8217;application server</p></li><li class="fragment"><p>I validatori si possono estendere e personalizzare</p></li></ul></div></section>
+<section id="javax-validation"><h2>javax.validation</h2><div class="paragraph"><p>Ecco un esempio di annotazioni per la validazione:</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class MyEntry {
+
+    @NotNull // indica che è obbligatorio
+    String title;
+
+    @Min(1)  // indica che il minimo è 1
+    int age;
+
+    @Past    // indica che deve essere una data passata
+    Date date;
+}</code></pre></div></div></section>
+<section id="vincoli"><h2>Vincoli</h2><table class="tableblock frame-all grid-all" style="width:100%"><colgroup><col style="width:50%" /><col style="width:50%" /></colgroup><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Min</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere un intero maggiore o uguale al numero indicato</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Max</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere un intero minore o uguale al numero indicato</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Digits</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere un numero in un certo range</p></td></tr></tbody></table></section>
+<section id="vincoli-sup-2-sup"><h2>Vincoli<sup>(2)</sup></h2><table class="tableblock frame-all grid-all" style="width:100%"><colgroup><col style="width:50%" /><col style="width:50%" /></colgroup><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@NotNull</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere diverso da <code>null</code></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Null</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore essere <code>null</code></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Future</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere una data nel futuro</p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Past</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere una data nel passato</p></td></tr></tbody></table></section>
+<section id="vincoli-sup-3-sup"><h2>Vincoli<sup>(3)</sup></h2><table class="tableblock frame-all grid-all" style="width:100%"><colgroup><col style="width:50%" /><col style="width:50%" /></colgroup><tbody><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Pattern</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve corrispondere alla <em>regular expression</em> indicata in <code>regexp</code></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@AssertTrue</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">il valore deve essere <code>true</code></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@AssertFalse</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">Il valore deve essere <code>false</code></p></td></tr><tr><td class="tableblock halign-left valign-top"><p class="tableblock">@Size</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">La lunghezza del valore deve corrispondere ai limiti <code>min</code> e <code>max</code> indicati</p></td></tr></tbody></table></section>
+<section id="cosa-validare"><h2>Cosa validare?</h2><div class="paragraph"><p>Queste annotazioni sono applicabili su:</p></div>
+<div class="ulist"><ul><li><p>metodi, per validare i valori restituiti</p></li><li><p>campi, per validare i bean</p></li><li><p>parametri, per validare il passaggio di parametri nei metodi</p></li><li><p>costruttori, analogo al precedente</p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class Expirer {
+
+  public Expirer(@Min(10) intt days, @Future @NotNull Date expire) { ... }
+
+  @AssertTrue
+  public boolean isValid() { ... }
+}</code></pre></div></div></section>
+<section id="validazione-esplicita"><h2>Validazione esplicita</h2><div class="paragraph"><p>Ottenuto il validatore si può validare un bean direttamente:</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class MyValidation {
+  public void run() {
+    ValidationFactory factory = Validation.buildDefaultValidationFactory();
+    Validator validator = factory.getValidator();
+    Set&lt;ConstraintViolation&gt; violations = validator.validate(myBlogEntry);
+    // ...
+  }
+}</code></pre></div></div>
+<div class="paragraph"><p>Il risultato è l&#8217;elenco delle violazioni della <code>myBlogEntry</code>.</p></div></section>
+<section id="validatore-dal-framework"><h2>Validatore dal framework</h2><div class="paragraph"><p>Il <code>validator</code> si può ottenere via <em>injection</em> dal framework di riferimento:</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class MyClass {
+  @Resource
+  Validator validator;
+}</code></pre></div></div></section>
+<section id="validazione-e-jpa"><h2>Validazione e JPA</h2><div class="paragraph"><p>Si possono annotare per la validazione i campi delle entity JPA</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">public class Person extends BaseEntity {
+  @NotNull     // obbligatorio
+  @Size(min=2) // i nomi devono avere almeno 2 caratteri
+  @Column(nullable=false)
+  private String firstname;
+
+  @NotNull     // obblligatorio
+  @Size(min=2) // i cognomi devono avere almeno 2 caratteri
+  @Column(nullable=false)
+  private String lastname;
+
+  //...
+}</code></pre></div></div>
+<div class="paragraph"><p>I framework JPA prima di persistere l&#8217;oggetto, solitamente, applicano la
+validazione.</p></div></section>
+<section id="validazione-sui-parametri-web"><h2>Validazione sui parametri web</h2><div class="listingblock"><div class="content"><pre class="highlight"><code>@Controller
+public class Articles {
+
+  @RequestMapping("/article", method=RequestMethod.POST)
+  public String save(@Valid Article article,              <i class="conum" data-value="1"></i><b>(1)</b>
+                     BindingResult bindingResult,         <i class="conum" data-value="2"></i><b>(2)</b>
+                     Model model) {
+    if (bindingResult.hasErrors()) {                      <i class="conum" data-value="3"></i><b>(3)</b>
+      model.addAttribute("article", article);
+      return "article";                                   <i class="conum" data-value="4"></i><b>(4)</b>
+    }
+    // ... save
+    return "redirect:/";                              <i class="conum" data-value="5"></i><b>(5)</b>
+  }
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>indica che <code>article</code> deve essere validato</td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>contiene i risultati della validazione</td></tr><tr><td><i class="conum" data-value="3"></i><b>3</b></td><td>si può controllare se <code>article</code> è valido</td></tr><tr><td><i class="conum" data-value="4"></i><b>4</b></td><td>se ci sono errori, si restituisce la form da correggere</td></tr><tr><td><i class="conum" data-value="5"></i><b>5</b></td><td>dopo la <em>POST</em> corretta, si fa redirect all&#8217;elenco.</td></tr></table></div></section>
+<section id="spring-security"><h2>Spring Security</h2><div class="ulist"><ul><li class="fragment"><p>È un framework potente e particolarmente personalizzabile per:</p><div class="ulist"><ul><li><p>l&#8217;autenticazione</p></li><li><p>il controllo degli accessi</p></li></ul></div></li><li class="fragment"><p>è lo standard per le applicazioni basate su Spring Framework</p></li><li class="fragment"><p>è impostabile come modulo aggiuntivo su <strong>Spring Boot</strong></p><div class="ulist"><ul><li><p>occorre soltanto aggiungere il modulo <strong>spring-boot-starter-security</strong></p></li></ul></div></li></ul></div></section>
+<section id="spring-security-sup-2-sup"><h2>Spring Security<sup>(2)</sup></h2><div class="ulist"><ul><li class="fragment"><p>Supporta vari sistemi di autenticazione con</p><div class="ulist"><ul><li><p>HTTP Basic</p></li><li><p>HTTP Digest</p></li><li><p>HTTP X.509</p></li><li><p>Form/Session</p></li></ul></div></li><li class="fragment"><p>inoltre integra tecnologie come LDAP, OpenID, OAuth, &#8230;&#8203; e molti altre.</p></li></ul></div></section></div></div><script src="reveal.js/lib/js/head.min.js"></script><script src="reveal.js/js/reveal.js"></script><script type="text/javascript">// See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+Reveal.initialize({
+  // Display controls in the bottom right corner
+  controls: true,
+  // Display a presentation progress bar
+  progress: true,
+  // Display the page number of the current slide
+  slideNumber: true,
+  // Push each slide change to the browser history
+  history: true,
+  // Enable keyboard shortcuts for navigation
+  keyboard: true,
+  // Enable the slide overview mode
+  overview: true,
+  // Vertical centering of slides
+  center: true,
+  // Enables touch navigation on devices with touch input
+  touch: true,
+  // Loop the presentation
+  loop: false,
+  // Change the presentation direction to be RTL
+  rtl: false,
+  // Turns fragments on and off globally
+  fragments: true,
+  // Flags if the presentation is running in an embedded mode,
+  // i.e. contained within a limited portion of the screen
+  embedded: false,
+  // Number of milliseconds between automatically proceeding to the
+  // next slide, disabled when set to 0, this value can be overwritten
+  // by using a data-autoslide attribute on your slides
+  autoSlide: 0,
+  // Stop auto-sliding after user input
+  autoSlideStoppable: true,
+  // Enable slide navigation via mouse wheel
+  mouseWheel: false,
+  // Hides the address bar on mobile devices
+  hideAddressBar: true,
+  // Opens links in an iframe preview overlay
+  previewLinks: false,
+  // Theme (e.g., beige, black, league, night, serif, simple, sky, solarized, white)
+  // NOTE setting the theme in the config no longer works in reveal.js 3.x
+  //theme: Reveal.getQueryHash().theme || 'league',
+  // Transition style (e.g., none, fade, slide, convex, concave, zoom)
+  transition: Reveal.getQueryHash().transition || 'default',
+  // Transition speed (e.g., default, fast, slow)
+  transitionSpeed: 'default',
+  // Transition style for full page slide backgrounds (e.g., none, fade, slide, convex, concave, zoom)
+  backgroundTransition: 'fade',
+  // Number of slides away from the current that are visible
+  viewDistance: 3,
+  // Parallax background image (e.g., "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'")
+  parallaxBackgroundImage: '',
+  // Parallax background size in CSS syntax (e.g., "2100px 900px")
+  parallaxBackgroundSize: '',
+
+  // The "normal" size of the presentation, aspect ratio will be preserved
+  // when the presentation is scaled to fit different resolutions. Can be
+  // specified using percentage units.
+  width: 960,
+  height: 700,
+
+  // Factor of the display size that should remain empty around the content
+  margin: 0.1,
+
+  // Bounds for smallest/largest possible scale to apply to content
+  minScale: 0.2,
+  maxScale: 1.5,
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+      { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+});</script></body></html>

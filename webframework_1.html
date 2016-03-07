@@ -1,0 +1,135 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="author" content="Marco Andreini" /><title>Web Framework Introduzione</title><meta content="yes" name="apple-mobile-web-app-capable" /><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" name="viewport" /><link href="reveal.js/css/reveal.css" rel="stylesheet" /><link rel="stylesheet" href="reveal.js/css/theme/league.css" id="theme" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" /><link href="reveal.js/lib/css/zenburn.css" rel="stylesheet" /><script type="text/javascript">document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script></head><body><div class="reveal"><div class="slides"><section><h1>Web Framework Introduzione</h1><p><small>Marco Andreini</small></p></section><section id="spring-framework"><h2>Spring Framework</h2><div class="paragraph"><p>Spring è il più popolare application development framework in ambiente Java enterprise.
+Milioni di sviluppatori nel mondo usano Spring.
+È un framework per scrivere codice molto performante, facilmente testabile, particolarmente riutilizzabile.</p></div></section>
+<section id="caratteristiche-salienti"><h2>Caratteristiche salienti</h2><div class="ulist"><ul><li class="fragment"><p>È organizzato in modo modulare. Ad esempio:</p><div class="ulist"><ul><li><p>Il modulo Spring Web MVC framework permette di sviluppare applicazioni web integrate.</p></li><li><p>Il modulo Spring JPA permette di collegare il JPA all&#8217;applicazione.</p></li></ul></div></li><li class="fragment"><p>Permette di creare applicazioni di livello enterprise utilizzando POJO.</p></li><li class="fragment"><p>Ha un sistema di IoC/Dependency Injection integrato.</p></li></ul></div></section>
+<section id="componenti-spring-framework"><h2>Componenti Spring Framework</h2><div class="imageblock" style=""><div class="content"><img src="./images/spring-overview.png" alt="Spring Framework" /></div></div></section>
+<section id="spring-framework-core-container"><h2>Spring Framework: Core container</h2><div class="ulist"><ul><li class="fragment"><p>Il modulo <strong>core</strong> implementa le parti fondamentali del framework, includendo
+quindi le funzionalità di <strong>Dependency Injection</strong>.</p></li><li class="fragment"><p>Il modulo <strong>bean</strong> implementa il BeanFactory che è una sofisticata implementazione
+del <em>factory pattern</em>.</p></li><li class="fragment"><p>Il modulo <strong>context</strong> è il mezzo per accedere agli oggetti definiti e configurati.</p></li><li class="fragment"><p>Il modulo <strong>Expression Language</strong> implementa un potente linguaggio per le
+espressioni per la consultazione e la gestione degli oggetti a runtime.</p></li></ul></div></section>
+<section id="spring-boot"><h2>Spring Boot</h2><div class="dlist"><dl><dt class="hdlist1">Bootable</dt><dd><p>si avvia direttamente senza bisogno di un application server a parte,
+avendo integrato un Tomcat o Jetty.</p></dd><dt class="hdlist1">Minimal</dt><dd><p>riduce al minimo la richiesta di configuraione iniziale, utilizzando
+le convenzioni sulle configurazioni</p></dd><dt class="hdlist1">Integration</dt><dd><p>offre integrazioni già pronte con molte funzionalità utili</p></dd></dl></div></section>
+<section id="start-spring-io"><h2>start.spring.io</h2><div class="imageblock" style=""><div class="content"><img src="./images/start_spring_io.png" alt="start.spring.io" /></div></div></section>
+<section id="il-progetto-in-spring-boot"><h2>Il progetto in Spring Boot</h2><div class="ulist"><ul><li><p>Cosa comprende?</p><div class="ulist"><ul><li><p>la configurazione di minima</p></li><li><p>il pom (maven) per scaricare le dipendenze e compilare</p></li></ul></div></li></ul></div></section>
+<section id="spring-mvc"><h2>Spring MVC</h2><div class="ulist"><ul><li class="fragment"><p>Il <strong>Model</strong> incapsula i dati dell&#8217;applicazione, che in generale sono POJO.</p></li><li class="fragment"><p>La <strong>View</strong> è responsabile dell&#8217;interpretazione dei dati del modello e di solito
+genera HTML, che il browser dell&#8217;utente può interpretare.</p></li><li class="fragment"><p>Il <strong>Controller</strong> è responsabile di elaborare le richieste utente, costruire
+un Model appropriato e passarlo alla View.</p></li></ul></div></section>
+<section id="i-controller"><h2>I controller</h2><div class="ulist"><ul><li class="fragment"><p>In spring MVC la <code>DispatcherServlet</code> delega le richieste ai controller per
+eseguire le funzionalità specifiche.</p></li><li class="fragment"><p>L&#8217;annotazione @Controller indica che una particolare classe ha il ruolo di
+controller.</p></li><li class="fragment"><p>L&#8217;annotazione @RequestMapping è utilizzata per associare un URL ad una classe
+intera o ad un metodo specifico.</p></li><li class="fragment"><p>L&#8217;uso dell&#8217;annotazione @RequestMapping a livello di classe indica che tutti i
+metodi in quel controller sono relativi a quel percorso.</p><div class="literalblock"><div class="content"><pre>vedi esempio</pre></div></div></li></ul></div></section>
+<section id="le-view"><h2>Le View</h2><div class="ulist"><ul><li><p>Spring MVC supporta molte tipologie di sistemi di template e tecnologie di
+presentazione.</p><div class="ulist"><ul><li><p>Tra le queli cono HTML, PDF, Excel, XML, Velocity, JSON,
+Atom/RSS feeds.</p></li><li><p>Ci concentreremo sui template FreeMarker come esempio.</p><div class="literalblock"><div class="content"><pre>vedi esempio</pre></div></div></li></ul></div></li></ul></div></section>
+<section id="requestmapping"><h2>@RequestMapping</h2><div class="ulist"><ul><li><p>Si può utilizzare l&#8217;annotazione <code>@RequestMapping</code> per ottenere un accesso
+conveniente a parti selezionate di un URL.</p></li><li><p>Un template URI è una string simile a un URI</p><div class="ulist"><ul><li><p>contiene uno o più nomi di variabili</p></li><li><p>quando sostituiamo il valore di queste variabili, il template in questione
+diventa una URI.</p></li></ul></div></li></ul></div></section>
+<section id="requestmapping-esempio"><h2>@RequestMapping: esempio</h2><div class="ulist"><ul><li><p>per esempio, l&#8217;URI Template <code><a href="http://www.esempio.it/users/{userId}" class="bare">http://www.esempio.it/users/{userId}</a></code> contiene
+la variabile userId.</p><div class="ulist"><ul><li><p>si assegna il valore <strong>mario</strong> alla variabile <strong>userId</strong> consultando <code><a href="http://www.esempio.it/users/mario" class="bare">http://www.esempio.it/users/mario</a></code></p></li></ul></div></li></ul></div></section>
+<section id="requestmapping-dettagli"><h2>@RequestMapping: dettagli</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@RequestMapping(value = "/users/{userId}", method = RequestMethod.GET) <i class="conum" data-value="1"></i><b>(1)</b>
+public String findUser(@PathVariable String userId, Model model) {     <i class="conum" data-value="2"></i><b>(2)</b>
+    User user = userDao.findById(userId);
+    model.addAttribute("user", user);
+    return "displayUser";
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>indicazione del template URI e della variabile <strong>userId</strong></td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>utilizzo della variabile <strong>userId</strong></td></tr></table></div></section>
+<section id="requestmapping-dettagli-sup-2-sup"><h2>@RequestMapping: dettagli<sup>(2)</sup></h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="java language-java">@Controller
+@RequestMapping(value = "/users/{userId}")                                <i class="conum" data-value="1"></i><b>(1)</b>
+public class UsersController {
+    @RequestMapping(value = "/docs/{docId}", method = RequestMethod.GET)  <i class="conum" data-value="2"></i><b>(2)</b>
+    public String findDoc(@PathVariable String userId,                    <i class="conum" data-value="3"></i><b>(3)</b>
+                          @PathVariable String docId,                     <i class="conum" data-value="4"></i><b>(4)</b>
+                          Model model) {
+        ...
+    }
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>template URI di base sul controller; da notare la <strong>userId</strong></td></tr><tr><td><i class="conum" data-value="2"></i><b>2</b></td><td>template URI del metodo; da notare l&#8217;altro paremetro <strong>docId</strong></td></tr><tr><td><i class="conum" data-value="3"></i><b>3</b></td><td>utilizzo della <strong>userId</strong></td></tr><tr><td><i class="conum" data-value="4"></i><b>4</b></td><td>utilizzo della <strong>docId</strong></td></tr></table></div></section>
+<section id="vincoli-su-requestmapping"><h2>Vincoli su @RequestMapping</h2><div class="ulist"><ul><li><p>è possibile vincolare le variabili con <strong>espressioni regolari</strong></p></li></ul></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code>@RequestMapping(value = "/users/{userId:[a-z-]+}")                 <i class="conum" data-value="1"></i><b>(1)</b>
+public String findUser(@PathVariable String userId, Model model) {
+    ...
+}</code></pre></div></div>
+<div class="colist arabic"><table><tr><td><i class="conum" data-value="1"></i><b>1</b></td><td>in questo modo possono essere solo lettere minuscole, dalla <strong>a</strong> alla <strong>z</strong></td></tr></table></div></section>
+<section id="risorse-statiche"><h2>Risorse statiche</h2><div class="ulist"><ul><li><p>Si utilizza il <code>classpath:/static/**</code> &#8594; src/main/resources/static</p></li><li><p>Le alternative disponibili sono:</p><div class="ulist"><ul><li><p>classpath:/public/**</p></li><li><p>classpath:/resources/**</p></li><li><p>classpath:/META-INF/resources/**</p></li></ul></div></li><li><p>Trattamento speciale per <code>index.html</code> posizionato in uno dei percorsi indicati</p></li></ul></div></section>
+<section id="archivi-di-risorse-statiche"><h2>Archivi di risorse statiche</h2><div class="ulist"><ul><li><p>Si possono utilizzare i <strong>webjar</strong></p><div class="ulist"><ul><li><p>archivi di risorse statiche già pronte</p><div class="ulist"><ul><li><p>twitter-bootstrap, jquery &#8230;&#8203;</p></li></ul></div></li></ul></div></li><li><p>si indicano come dipendenze del progetto, quindi via <code>maven</code></p></li><li><p>si utilizzano nel template con riferimenti statici:</p><div class="ulist"><ul><li><p>esempio: /webjars/bootstrap/&#8230;&#8203;</p></li></ul></div></li></ul></div></section>
+<section id="logging"><h2>Logging</h2><div class="ulist"><ul><li class="fragment"><p><strong>Spring Boot</strong> fornisce configurazioni già pronte per sistemi di logging:</p><div class="olist arabic"><ol class="arabic"><li><p><code>logback</code></p></li><li><p><code>log4j</code></p></li><li><p><code>java.util.logging</code></p></li></ol></div></li><li class="fragment"><p>negli esempi trattati useremo logback</p><div class="literalblock"><div class="content"><pre>Esempi di logging</pre></div></div></li></ul></div></section>
+<section id="agenda"><h2>Agenda</h2><div class="ulist"><ul><li><p>il main e relativo avvio</p></li><li><p>un controller</p><div class="ulist"><ul><li><p>metodo senza parametri (list)</p></li><li><p>metodo con un parametro id (show)</p></li><li><p>salvataggio?</p></li></ul></div></li><li><p>configurazione jpa</p></li><li><p>la generazione del jar</p></li></ul></div></section></div></div><script src="reveal.js/lib/js/head.min.js"></script><script src="reveal.js/js/reveal.js"></script><script type="text/javascript">// See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+Reveal.initialize({
+  // Display controls in the bottom right corner
+  controls: true,
+  // Display a presentation progress bar
+  progress: true,
+  // Display the page number of the current slide
+  slideNumber: true,
+  // Push each slide change to the browser history
+  history: true,
+  // Enable keyboard shortcuts for navigation
+  keyboard: true,
+  // Enable the slide overview mode
+  overview: true,
+  // Vertical centering of slides
+  center: true,
+  // Enables touch navigation on devices with touch input
+  touch: true,
+  // Loop the presentation
+  loop: false,
+  // Change the presentation direction to be RTL
+  rtl: false,
+  // Turns fragments on and off globally
+  fragments: true,
+  // Flags if the presentation is running in an embedded mode,
+  // i.e. contained within a limited portion of the screen
+  embedded: false,
+  // Number of milliseconds between automatically proceeding to the
+  // next slide, disabled when set to 0, this value can be overwritten
+  // by using a data-autoslide attribute on your slides
+  autoSlide: 0,
+  // Stop auto-sliding after user input
+  autoSlideStoppable: true,
+  // Enable slide navigation via mouse wheel
+  mouseWheel: false,
+  // Hides the address bar on mobile devices
+  hideAddressBar: true,
+  // Opens links in an iframe preview overlay
+  previewLinks: false,
+  // Theme (e.g., beige, black, league, night, serif, simple, sky, solarized, white)
+  // NOTE setting the theme in the config no longer works in reveal.js 3.x
+  //theme: Reveal.getQueryHash().theme || 'league',
+  // Transition style (e.g., none, fade, slide, convex, concave, zoom)
+  transition: Reveal.getQueryHash().transition || 'default',
+  // Transition speed (e.g., default, fast, slow)
+  transitionSpeed: 'default',
+  // Transition style for full page slide backgrounds (e.g., none, fade, slide, convex, concave, zoom)
+  backgroundTransition: 'fade',
+  // Number of slides away from the current that are visible
+  viewDistance: 3,
+  // Parallax background image (e.g., "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'")
+  parallaxBackgroundImage: '',
+  // Parallax background size in CSS syntax (e.g., "2100px 900px")
+  parallaxBackgroundSize: '',
+
+  // The "normal" size of the presentation, aspect ratio will be preserved
+  // when the presentation is scaled to fit different resolutions. Can be
+  // specified using percentage units.
+  width: 960,
+  height: 700,
+
+  // Factor of the display size that should remain empty around the content
+  margin: 0.1,
+
+  // Bounds for smallest/largest possible scale to apply to content
+  minScale: 0.2,
+  maxScale: 1.5,
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+      { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+});</script></body></html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" /><meta name="author" content="Marco Andreini" /><title>CSS e JS</title><meta content="yes" name="apple-mobile-web-app-capable" /><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style" /><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" name="viewport" /><link href="reveal.js/css/reveal.css" rel="stylesheet" /><link rel="stylesheet" href="reveal.js/css/theme/league.css" id="theme" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" /><link href="reveal.js/lib/css/zenburn.css" rel="stylesheet" /><script type="text/javascript">document.write( '<link rel="stylesheet" href="reveal.js/css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );</script></head><body><div class="reveal"><div class="slides"><section><h1>CSS e JS</h1><p><small>Marco Andreini</small></p></section><section id="l-informazione-e-la-sua-presentazione"><h2>L&#8217;informazione e la sua presentazione</h2><div class="paragraph"><p>La pagina web è utile per trasferire le informazioni. Quest&#8217;ultima ha due aspetti fondamentali:</p></div>
+<div class="dlist"><dl><dt class="hdlist1">i contenuti</dt><dd><p>forniti con linguaggi di marcatura come HTML</p></dd><dt class="hdlist1">la presentazione</dt><dd><p>determinati dall&#8217;interpretazione browser</p></dd></dl></div></section>
+<section id="presentazione-e-browser"><h2>Presentazione e browser</h2><div class="ulist"><ul><li><p>Ogni browser ha un suo modo predefinito di presentare il contenuto</p><div class="ulist"><ul><li><p>a volte la presentazione è senbilmente diversa in funzione del browser</p></li></ul></div></li><li><p>Ci sono comportamenti grafici predefiniti per gli elementi HTML</p></li><li><p>si possono comunque personalizzare i vari aspetti della presentazione
+con l&#8217;uso degli <strong>stili</strong></p></li></ul></div></section>
+<section id="cascading-style-sheets-css"><h2>Cascading Style Sheets (CSS)</h2><div class="ulist"><ul><li><p>definiscono il modo con cui il browser presenta il contenuto</p><div class="ulist"><ul><li><p>la presentazione può riguardare più media (video, stampa, presentazione, audio, &#8230;&#8203;)</p></li><li><p>non uniforma la presentazione, fornisce delle indicazioni</p><div class="dlist"><dl><dt class="hdlist1">stylesheet</dt><dd><p>sono documenti che comprendono un insieme di <strong>regole di presentazione</strong></p></dd><dt class="hdlist1">regole</dt><dd><p>sono istruzioni che permettono di indicare l&#8217;aspetto stilistico di uno
+o più elementi</p></dd></dl></div></li></ul></div></li></ul></div></section>
+<section id="css-regole"><h2>CSS: regole</h2><div class="listingblock"><div class="title">esempio</div><div class="content"><pre class="highlight"><code class="css language-css">h1 { color: green }</code></pre></div></div>
+<div class="paragraph"><p>Le regole utilizzano un linguaggio semplice ed intuitivo attraverso il quale è
+abbastanza facile capirne la semantica, il linguaggio naturale di riferimento è
+naturalmente l&#8217;inglese.</p></div>
+<div class="paragraph"><p>La regola dell&#8217;esempio sopra indica che il colore (<code>color</code>) del testo
+degli elementi di tipo h1 viene impostato a verde (<code>green</code>).</p></div></section>
+<section id="regola"><h2>Regola</h2><table class="tableblock frame-all grid-all" style="width:100%"><colgroup><col style="width:50%" /><col style="width:50%" /></colgroup><tbody><tr><td class="tableblock halign-right valign-top"><p class="tableblock"><code>h1</code></p></td><td class="tableblock halign-left valign-top"><p class="tableblock"><code>{ color: green }</code></p></td></tr><tr><td class="tableblock halign-right valign-top"><p class="tableblock">selettore</p></td><td class="tableblock halign-left valign-top"><p class="tableblock">dichiarazione</p></td></tr></tbody></table>
+<div class="dlist"><dl><dt class="hdlist1">selettore</dt><dd><p>la parte prima delle parentesi graffe - specifica gli elementi
+assoggettati a questa regola ed è il collegamento tra il documento HTML e lo
+stile</p></dd><dt class="hdlist1">dichiarazione</dt><dd><p>la parte dentro le graffe - è la parte della regola che imposta il
+comportamento stilistico degli oggetti coinvolti</p></dd></dl></div></section>
+<section id="dichiarazione"><h2>Dichiarazione</h2><div class="listingblock"><div class="content"><pre class="highlight"><code class="css language-css">   h1        { color     : green  }
+// selettore { proprietà : valore }</code></pre></div></div>
+<div class="dlist"><dl><dt class="hdlist1">proprietà</dt><dd><p>la parte prima dei due punti che descrive una caratteristica che un
+oggetto può avere</p></dd><dt class="hdlist1">valore</dt><dd><p>la parte dopo i due punti che indica quale comportamento deve avere la
+proprietà selezionata</p></dd></dl></div></section>
+<section id="raggrupamenti-di-regole"><h2>Raggrupamenti di regole</h2><div class="paragraph"><p>Raggruppare le regole perchè?</p></div>
+<div class="ulist"><ul><li class="fragment"><p>per semplificare la struttura e la scrittura dei CSS</p></li><li class="fragment"><p>per razionalizzare gli stili</p></li><li class="fragment"><p>per ridurre le dimensioni del foglio di stile</p></li></ul></div></section>
+<section id="raggruppare-le-regole-per-dichiarazione"><h2>Raggruppare le regole per dichiarazione</h2><div class="paragraph"><p>Riportando come selettore l&#8217;elenco dei singoli selettori separati da ","</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="css language-css">h1, h2, h3 { font-weight: bold }</code></pre></div></div>
+<div class="paragraph"><p>corrispondente a:</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="css language-css">h1 { font-weight: bold }
+h2 { font-weight: bold }
+h3 { font-weight: bold }</code></pre></div></div></section>
+<section id="raggruppare-le-regole-per-selettore"><h2>Raggruppare le regole per selettore:</h2><div class="paragraph"><p>usando lo stesso selettore, ma elencando le dichiarazioni separate da ";"</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="css language-css">h1 { color: blue; font-weight: bold; text-align: center }</code></pre></div></div>
+<div class="paragraph"><p>corrispondente a:</p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="css language-css">h1 { color: blue }
+h1 { font-weight: bold }
+h1 { text-align: center}</code></pre></div></div></section>
+<section id="raggruppamento-misto"><h2>Raggruppamento misto</h2><div class="paragraph"><p>Si possono anche mescolare le due tipologie di raggruppamento.</p></div>
+<div class="listingblock"><div class="title">esempio.css</div><div class="content"><pre class="highlight"><code class="css language-css">h1, h2, h3 { color: blue; font-weight: bold }</code></pre></div></div></section>
+<section id="associare-i-css-alla-pagina-web"><h2>Associare i CSS alla pagina web</h2><div class="paragraph"><p>Si può indicare un foglio di stile ad una pagina HTML</p></div>
+<div class="olist arabic"><ol class="arabic"><li class="fragment"><p>utilizzando l&#8217;attributo <code>style</code> su uno o più elementi HTML</p></li><li class="fragment"><p>utilizzando l&#8217;elemento <code>style</code> al documento HTML</p></li><li class="fragment"><p>collegando un foglio di stile esterno per mezzo dell&#8217;elemento <code>link</code></p></li></ol></div></section>
+<section id="javascript"><h2>Javascript</h2><div class="ulist"><ul><li class="fragment"><p>Il <strong>javascript</strong> è un linguaggio di programmazione interpretato</p></li><li class="fragment"><p>inizialmente progettato per permettere l&#8217;esecuzione di script all&#8217;interno del
+browser (quindi <em>lato client</em>)</p></li><li class="fragment"><p>nato per dare la possibilità di interagire con l&#8217;utente in modo più diretto</p></li><li class="fragment"><p>si utilizza il pattern event/observer per personalizzare le azioni dell&#8217;utente</p></li></ul></div></section>
+<section id="esempio-di-javascript"><h2>Esempio di javascript</h2><div class="paragraph"><p>Si inserisce nella pagina web con l&#8217;elemento <code>script</code></p></div>
+<div class="listingblock"><div class="content"><pre class="highlight"><code class="html language-html">&lt;html&gt;
+ ...
+  &lt;script type="text/javascript"&gt;
+    document.write('&lt;p&gt;Ciao mondo!&lt;/p&gt;');
+  &lt;/script&gt;
+ ...
+&lt;/html&gt;</code></pre></div></div></section></div></div><script src="reveal.js/lib/js/head.min.js"></script><script src="reveal.js/js/reveal.js"></script><script type="text/javascript">// See https://github.com/hakimel/reveal.js#configuration for a full list of configuration options
+Reveal.initialize({
+  // Display controls in the bottom right corner
+  controls: true,
+  // Display a presentation progress bar
+  progress: true,
+  // Display the page number of the current slide
+  slideNumber: true,
+  // Push each slide change to the browser history
+  history: true,
+  // Enable keyboard shortcuts for navigation
+  keyboard: true,
+  // Enable the slide overview mode
+  overview: true,
+  // Vertical centering of slides
+  center: true,
+  // Enables touch navigation on devices with touch input
+  touch: true,
+  // Loop the presentation
+  loop: false,
+  // Change the presentation direction to be RTL
+  rtl: false,
+  // Turns fragments on and off globally
+  fragments: true,
+  // Flags if the presentation is running in an embedded mode,
+  // i.e. contained within a limited portion of the screen
+  embedded: false,
+  // Number of milliseconds between automatically proceeding to the
+  // next slide, disabled when set to 0, this value can be overwritten
+  // by using a data-autoslide attribute on your slides
+  autoSlide: 0,
+  // Stop auto-sliding after user input
+  autoSlideStoppable: true,
+  // Enable slide navigation via mouse wheel
+  mouseWheel: false,
+  // Hides the address bar on mobile devices
+  hideAddressBar: true,
+  // Opens links in an iframe preview overlay
+  previewLinks: false,
+  // Theme (e.g., beige, black, league, night, serif, simple, sky, solarized, white)
+  // NOTE setting the theme in the config no longer works in reveal.js 3.x
+  //theme: Reveal.getQueryHash().theme || 'league',
+  // Transition style (e.g., none, fade, slide, convex, concave, zoom)
+  transition: Reveal.getQueryHash().transition || 'default',
+  // Transition speed (e.g., default, fast, slow)
+  transitionSpeed: 'default',
+  // Transition style for full page slide backgrounds (e.g., none, fade, slide, convex, concave, zoom)
+  backgroundTransition: 'fade',
+  // Number of slides away from the current that are visible
+  viewDistance: 3,
+  // Parallax background image (e.g., "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'")
+  parallaxBackgroundImage: '',
+  // Parallax background size in CSS syntax (e.g., "2100px 900px")
+  parallaxBackgroundSize: '',
+
+  // The "normal" size of the presentation, aspect ratio will be preserved
+  // when the presentation is scaled to fit different resolutions. Can be
+  // specified using percentage units.
+  width: 960,
+  height: 700,
+
+  // Factor of the display size that should remain empty around the content
+  margin: 0.1,
+
+  // Bounds for smallest/largest possible scale to apply to content
+  minScale: 0.2,
+  maxScale: 1.5,
+
+  // Optional libraries used to extend on reveal.js
+  dependencies: [
+      { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+  ]
+});</script></body></html>
