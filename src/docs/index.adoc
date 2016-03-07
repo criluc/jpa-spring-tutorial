@@ -1,0 +1,48 @@
+= Corso Java Persistence API (JPA) con esempi ed introduzione a Spring Boot
+Marco Andreini <marco.andreini@gmail.com>, Cristian Lucchesi <cristian.lucchesi@gmail.com>
+2016-03-07
+:source-highlighter: highlightjs
+:backend: revealjs
+:revealjs_theme: night
+:revealjs_slideNumber: true
+:sourcedir: ../main/java
+
+== Oggetto del corso
+Java Persistence API (JPA) dalle basi fino alle funzionalità più evolute.
+Introduzione a Spring Boot con esempi di integrazione JPA e Spring.
+
+Il corso è interamente in italiano.
+
+Obiettivi del corso
+Il corso fornisce le basi per la progettazione e l'implementazione di applicazioni Web
+basate su Java, JPA ed in particolare Hibernate per la persistenza di oggetti Java su database relazionali,
+offrendo una panoramica sulle metodologie e gli strumenti più comunemente utilizzati.
+
+== Articolazione del corso
+
+Il corso è suddiviso per argomenti, alla parte teorica è associata una parte pratica disponibile
+anche questa su github: https://github.com/criluc/spring-tutorial.
+
+La parte teorica è suddivisa in:
+
+* <<introduzione_jpa_1.adoc,Introduzione a JPA >>
+* <<webframework_1.adoc,Web Framework Introduzione >>
+* <<introduzione_jpa_2.adoc,Introduzione a JPA^(2)^ >>
+* <<webframework_2.adoc,Web Framework (parte 2) >>
+* <<introduzione_jpa_3.adoc,Advanced JPA >>
+
+## Installation
+
+Per la parte dei sorgenti Java è possibile utilizzare questo progetto
+come progetto Gradle ed importarlo nel proprio editor preferito.
+
+## Contributors
+
+Marco Andreini <marco.andreini@gmail.com>
+
+Cristian Lucchesi <cristian.lucchesi@gmail.com>, @criluc
+
+## License
+
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
