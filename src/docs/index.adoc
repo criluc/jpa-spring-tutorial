@@ -20,16 +20,17 @@ offrendo una panoramica sulle metodologie e gli strumenti più comunemente utili
 
 == Articolazione del corso
 
-Il corso è suddiviso per argomenti, alla parte teorica è associata una parte pratica disponibile
-anche questa su github: https://github.com/criluc/spring-tutorial.
-
 La parte teorica è suddivisa in:
 
-* <<introduzione_jpa_1.adoc,Introduzione a JPA >>
-* <<webframework_1.adoc,Web Framework Introduzione >>
-* <<introduzione_jpa_2.adoc,Introduzione a JPA^(2)^ >>
-* <<webframework_2.adoc,Web Framework (parte 2) >>
-* <<introduzione_jpa_3.adoc,Advanced JPA >>
+* link:introduzione_jpa_1.html[Introduzione a JPA]
+* link:webframework_1.html[Web Framework Introduzione]
+* link:introduzione_jpa_2.html[Introduzione a JPA^(2)^]
+* link:webframework_2.html[Web Framework (parte 2)]
+* link:introduzione_jpa_3.html[Advanced JPA]
+
+Il corso è suddiviso per argomenti, alla parte teorica è associata una parte pratica disponibile
+anche questa su github
+* https://github.com/criluc/spring-tutorial.
 
 ## Installation
 
