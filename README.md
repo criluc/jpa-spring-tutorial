@@ -1,6 +1,5 @@
 ## Synopsis
 
-== Oggetto del corso
 Java Persistence API (JPA) dalle basi fino alle funzionalità più evolute.
 Introduzione a Spring Boot con esempi di integrazione JPA e Spring.
 
