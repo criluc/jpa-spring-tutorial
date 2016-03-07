@@ -1,4 +1,4 @@
-= Corso Java Persistence API (JPA) con esempi ed introduzione a Spring Boot
+= Corso JPA + Spring Boot
 Marco Andreini <marco.andreini@gmail.com>, Cristian Lucchesi <cristian.lucchesi@gmail.com>
 2016-03-07
 :source-highlighter: highlightjs
